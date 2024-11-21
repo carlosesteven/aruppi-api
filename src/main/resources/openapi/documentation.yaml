@@ -1,0 +1,36 @@
+openapi: "3.0.3"
+info:
+  title: "Aruppi API"
+  description: "Application API"
+  version: "5.0.0-preview"
+servers:
+  - url: "http://0.0.0.0:8080/api/v5"
+paths:
+  /directory:
+    get:
+      description: "Hello World!"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "Hello World!"
+  /anime/{id}:
+    get:
+      description: "Hello World!"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "Hello World!"
+components:
+  schemas: {}

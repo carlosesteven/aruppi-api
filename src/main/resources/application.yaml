@@ -1,0 +1,13 @@
+ktor:
+    application:
+        modules:
+            - com.jeluchu.ApplicationKt.module
+    deployment:
+        port: 8080
+        host: "0.0.0.0"
+
+db:
+    mongo:
+        connectionStrings: ${?MONGO_CONNECTION_STRING}
+        database:
+            name: ${?MONGO_DATABASE_NAME}
