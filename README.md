@@ -1,4 +1,4 @@
- # **Aruppi API** (v5.0.0) (Preview release)
+# **Aruppi API** (v5.0.0) (Preview release)
 
 > This API has everything about Japan, from anime, music, radio, images, videos ... to japanese culture
 >
@@ -8,52 +8,106 @@
 ![maintenance](https://img.shields.io/badge/maintained-Yes-brightgreen.svg)
 ![gitrepo](https://img.shields.io/github/stars/aruppi/aruppi-api?style=social)
 
-#
-
-<img src="./assets/img/cover.png" width="100%" alt="">
-
-&nbsp;
-&nbsp;
-&nbsp;
-
-&nbsp;
-&nbsp;
-&nbsp;
+![Aruppi API Banner](https://raw.githubusercontent.com/aruppi/aruppi-api/v5/assets/cover.png)
 
 Aruppi API has been developed to bring together all the information about Japanese culture, from anime and manga to the most secret places in Japan, its gastronomy and even its festivities.
 
 We are in continuous development to implement more features and improvements in the functioning of it, to later implement it in the mobile application.
 
-## **:wrench: Developer usage**
+# Developer usage
+
+## Prerequisites
+
+- **JDK 21** or higher installed.
+- **Gradle** installed (although Ktor can use the Gradle wrapper).
+- **Git** for cloning the repository.
+- **Docker Compose** installed on your local machine.
+  - For an easy installation, consider using **Docker Desktop**, which includes Docker Compose. Download it from [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+- A **server** or cloud service to deploy the application (e.g., Heroku, AWS, DigitalOcean).
+
+## Install IntelliJ IDEA Community Edition
+
+Download and install **IntelliJ IDEA Community Edition** from the official JetBrains website: [IntelliJ IDEA Community Edition](https://www.jetbrains.com/idea/download)
+
+**Instructions:**
+
+1. Visit the [IntelliJ IDEA download page](https://www.jetbrains.com/idea/download).
+2. Click on the **Download** button under the **Community** edition.
+3. Once downloaded, open the installer and follow the on-screen instructions to complete the installation.
 
 ### **Set up project**
 
-Comming Soon
+#### Clone project
+
+```bash
+git clone https://github.com/aruppi/aruppi-api.git
+cd aruppi-api
+```
+
+#### Configure the Environment
+
+Create a `.env` file or set the necessary environment variables for your application, such as:
+
+```
+MONGO_CONNECTION_STRING=mongodb://user:password@host:port
+MONGO_DATABASE_NAME=aruppi
+```
+
+You will be able to find an `example.env` file in the project, simply rename the file by removing ‘example’ and edit the variables
 
 ---
-
-### **Installation**
-
-Comming Soon
-
----
-
-### Start the project
-
-Comming Soon
 
 ### Build the Project
 
-Comming Soon
+#### Build the Services
 
-### Test the project
+Run the following command in the root directory of your project to build the Docker images:
 
-Comming Soon
+```bash
+docker-compose build
+```
 
-## 📖 API Documentation
+#### Start the Services
 
-**Documentation coming soon** at the following link: [**Aruppi Wiki**](https://github.com/aruppi/aruppi-api/wiki)
-Where we will show more information about the calls and queries together with the response obtained or the different types of variables in some of the queries.
+Start the application and the database using Docker Compose:
+
+```bash
+docker-compose up -d
+```
+
+Explanation:
+ - `up`: Creates and starts the containers.
+ - `-d`: Runs the containers in detached mode.
+
+#### Verify the Services are Running
+
+To check if the services are running correctly, use:
+
+```bash
+docker-compose ps
+```
+
+You should see output similar to:
+
+| NAME     | IMAGE          | COMMAND              | SERVICE | CREATED        | STATUS       | PORTS                  |
+|----------|----------------|----------------------|---------|----------------|--------------|------------------------|
+| ktor_app | aruppi-api-app | "/app/entrypoint.sh" | app     | 19 seconds ago | Up 2 seconds | 0.0.0.0:8080->8080/tcp |
+
+Additionally, you can view the logs to ensure the application has started without errors:
+
+```bash
+docker-compose logs -f app
+```
+
+## API Documentation
+
+The API documentation is included within the API. If you want to:
+
+- **Consult the endpoints**
+- **Perform tests**
+- **See the types of responses**
+
+Simply navigate to [http://0.0.0.0:8080/api/v5/](http://0.0.0.0:8080/api/v5/) to view the complete documentation.
 
 ## Countdown to deprecation of v3 API
 
