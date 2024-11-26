@@ -81,6 +81,7 @@ jobs:
 
       # Step 6: Build and publish to Docker Hub and GitHub Container Registry
       - name: Build and publish
+        id: push
         uses: docker/build-push-action@v5
         with:
           context: .
