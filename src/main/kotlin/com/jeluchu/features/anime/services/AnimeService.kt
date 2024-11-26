@@ -3,6 +3,7 @@ package com.jeluchu.features.anime.services
 import com.jeluchu.core.messages.ErrorMessages
 import com.jeluchu.core.models.ErrorResponse
 import com.jeluchu.features.anime.mappers.documentToMoreInfoEntity
+import com.jeluchu.features.anime.mappers.toMoreInfoEntity
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Filters
 import io.ktor.http.*

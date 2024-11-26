@@ -2,14 +2,14 @@
 
 # Check if MONGO_CONNECTION_STRING is defined
 if [ -z "$MONGO_CONNECTION_STRING" ]; then
-  echo "ERROR: The environment variable for the database, MONGO_CONNECTION_STRING is not defined."
+  >&2  echo -e "ERROR: The environment variable MONGO_CONNECTION_STRING is not defined.\n\tYou must provide a valid Connection String"
   exit 1
 fi
 
 # Verificar si MONGO_DATABASE_NAME está definido
 if [ -z "$MONGO_DATABASE_NAME" ]; then
-  echo "WARNING: The environment variable for the database, MONGO_DATABASE_NAME, is not defined. It is using ‘mongodb’ as the default value."
-  MONGO_DATABASE_NAME="mongodb"
+  >&2  echo -e "WARNING: The environment variable for the database, MONGO_DATABASE_NAME, is not defined.\n\tUsing ‘aruppi’ as default value."
+  MONGO_DATABASE_NAME="aruppi"
 fi
 
 
@@ -25,10 +25,12 @@ ktor:
 
 db:
   mongo:
-    connectionStrings: "${MONGO_CONNECTION_STRING}"
+    connectionStrings: ${MONGO_CONNECTION_STRING}
     database:
-      name: "${MONGO_DATABASE_NAME:-mongodb}"
+      name: ${MONGO_DATABASE_NAME:-mongodb}
 EOF
+
+cd /app/
 
 # Run the application with the specified configuration
 exec java -Dconfig.file=/app/application.yaml -jar /app/app.jar

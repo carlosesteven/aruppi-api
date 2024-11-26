@@ -23,7 +23,7 @@ RUN gradle buildFatJar --no-daemon
 FROM amazoncorretto:21 AS runtime
 EXPOSE 8080/tcp
 RUN mkdir /app
-COPY --from=build /home/gradle/src/build/libs/*.jar /app/app.jar
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-ENTRYPOINT ["/app/entrypoint.sh"]
+COPY --from=build /home/gradle/src/build/libs/aruppi-api-all.jar /app/app.jar
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
