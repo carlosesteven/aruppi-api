@@ -10,12 +10,14 @@ name: Publish Docker image
 
 on:
   push:
-    branches: [ v5 ]
+    #branches: [ v5 ]
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
-    paths:
-      - 'src/*'
-      - '!src/main/resources/*'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+    #paths:
+    #  - 'src/*'
+    #  - '!src/main/resources/*'
+  workflow_dispatch:
 
 jobs:
   build-and-push:
