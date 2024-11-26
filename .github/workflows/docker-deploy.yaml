@@ -13,6 +13,9 @@ on:
     branches: [ v5 ]
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
+    paths:
+      - 'src/*'
+      - '!src/main/resources/*'
 
 jobs:
   build-and-push:
@@ -82,7 +85,7 @@ jobs:
       # Step 6: Build and publish to Docker Hub and GitHub Container Registry
       - name: Build and publish
         id: push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -94,10 +97,10 @@ jobs:
           cache-to: type=gha,mode=max
           #github-token: ${{ secrets.GHCR_TOKEN }}
 
-      # Step 7: Generate artifact attestation
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v1
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
+      ## Step 7: Generate artifact attestation
+      #- name: Generate artifact attestation
+      #  uses: actions/attest-build-provenance@v1
+      #  with:
+      #    subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+      #    subject-digest: ${{ steps.push.outputs.digest }}
+      #    push-to-registry: true
