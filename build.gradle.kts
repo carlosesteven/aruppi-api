@@ -20,7 +20,9 @@ repositories {
 
 dependencies {
     implementation(libs.bson)
+    implementation(libs.ktor.client.cio)
     implementation(libs.logback.classic)
+    implementation(libs.ktor.client.core)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.swagger)

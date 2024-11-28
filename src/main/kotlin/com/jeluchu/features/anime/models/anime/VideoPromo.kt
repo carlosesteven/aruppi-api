@@ -1,5 +1,6 @@
 package com.example.models
 
+import com.jeluchu.features.anime.models.anime.Images
 import kotlinx.serialization.Serializable
 
 @Serializable

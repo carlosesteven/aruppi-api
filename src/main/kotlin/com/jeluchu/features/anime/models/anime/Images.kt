@@ -1,4 +1,4 @@
-package com.example.models
+package com.jeluchu.features.anime.models.anime
 
 import kotlinx.serialization.Serializable
 

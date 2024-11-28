@@ -2,7 +2,9 @@ package com.jeluchu.features.anime.mappers
 
 import com.example.models.*
 import com.jeluchu.core.extensions.*
+import com.jeluchu.features.anime.models.anime.Images
 import com.jeluchu.features.anime.models.directory.AnimeDirectoryEntity
+import com.jeluchu.features.schedule.models.DayEntity
 import org.bson.Document
 
 fun documentToAnimeDirectoryEntity(doc: Document) = AnimeDirectoryEntity(
@@ -211,3 +213,10 @@ fun documentToVideoPromo(doc: Document): VideoPromo {
         images = doc.get("images", Document::class.java)?.let { documentToImages(it) } ?: Images()
     )
 }
+
+fun documentToScheduleDayEntity(doc: Document) = DayEntity(
+    day = doc.getStringSafe("day"),
+    malId = doc.getIntSafe("malId"),
+    image = doc.getStringSafe("image"),
+    title = doc.getStringSafe("title")
+)
