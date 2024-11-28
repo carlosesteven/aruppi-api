@@ -1,4 +1,4 @@
-package com.jeluchu.core.utils
+package com.jeluchu.core.enums
 
 enum class TimeUnit {
     DAY,

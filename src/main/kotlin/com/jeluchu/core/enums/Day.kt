@@ -1,4 +1,4 @@
-package com.jeluchu.core.utils
+package com.jeluchu.core.enums
 
 import kotlinx.serialization.Serializable
 

@@ -10,6 +10,11 @@ fun Route.rankingsEndpoints(
     mongoDatabase: MongoDatabase,
     service: RankingsService = RankingsService(mongoDatabase)
 ) {
-    getToJson(Routes.TOP_ANIME) { service.getAnimeByMalId(call) }
-    getToJson(Routes.TOP_MANGA) { service.getDirectory(call) }
+    route(Routes.TOP) {
+        route(Routes.ANIME) {
+            getToJson(Routes.TOP_ANIME) { service.getAnimeRanking(call) }
+        }
+    }
+
+    getToJson(Routes.TOP_MANGA) {  }
 }

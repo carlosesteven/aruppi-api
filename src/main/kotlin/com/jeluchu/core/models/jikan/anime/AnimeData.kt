@@ -1,6 +1,8 @@
 package com.jeluchu.core.models.jikan.anime
 
-import com.jeluchu.core.utils.Day
+import com.jeluchu.core.enums.Day
+import com.jeluchu.core.utils.toVideoPromo
+import com.jeluchu.features.rankings.models.TopEntity
 import com.jeluchu.features.schedule.models.DayEntity
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -280,6 +282,27 @@ data class AnimeData(
             day = day.name.lowercase(),
             image = images?.webp?.large.orEmpty(),
             title = titles?.first()?.title.orEmpty()
+        )
+
+        fun AnimeData.toTopEntity(
+            page: Int,
+            rank: Int,
+            type: String,
+            subType: String,
+        ) = TopEntity(
+            malId = malId,
+            rank = rank,
+            score = score,
+            image = images?.webp?.large.orEmpty(),
+            title = titles?.first()?.title.orEmpty(),
+            url = url,
+            promo = trailer?.toVideoPromo(),
+            season = season,
+            year = year,
+            airing = airing,
+            type = type,
+            subtype = subType,
+            page = page
         )
     }
 }

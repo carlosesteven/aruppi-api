@@ -1,5 +1,6 @@
 package com.jeluchu.core.utils
 
+import com.jeluchu.features.rankings.models.TopEntity
 import com.jeluchu.features.schedule.models.DayEntity
 import com.jeluchu.features.schedule.models.ScheduleData
 import kotlinx.serialization.encodeToString
@@ -24,5 +25,15 @@ fun parseScheduleDataToDocuments(data: ScheduleData): List<Document> {
     processDay(data.saturday)
     processDay(data.sunday)
 
+    return documents
+}
+
+fun parseScheduleDataToDocuments(data: List<TopEntity>?): List<Document> {
+    val documents = mutableListOf<Document>()
+    data?.forEach { animeData ->
+        val animeJsonString = Json.encodeToString(animeData)
+        val document = Document.parse(animeJsonString)
+        documents.add(document)
+    }
     return documents
 }

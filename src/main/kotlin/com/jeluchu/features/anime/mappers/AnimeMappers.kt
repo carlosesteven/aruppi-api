@@ -4,6 +4,7 @@ import com.example.models.*
 import com.jeluchu.core.extensions.*
 import com.jeluchu.features.anime.models.anime.Images
 import com.jeluchu.features.anime.models.directory.AnimeDirectoryEntity
+import com.jeluchu.features.rankings.models.TopEntity
 import com.jeluchu.features.schedule.models.DayEntity
 import org.bson.Document
 
@@ -219,4 +220,20 @@ fun documentToScheduleDayEntity(doc: Document) = DayEntity(
     malId = doc.getIntSafe("malId"),
     image = doc.getStringSafe("image"),
     title = doc.getStringSafe("title")
+)
+
+fun documentToTopEntity(doc: Document) = TopEntity(
+    malId = doc.getIntSafe("malId"),
+    rank = doc.getIntSafe("rank"),
+    score = doc.getFloatSafe("score"),
+    title = doc.getStringSafe("title"),
+    image = doc.getStringSafe("image"),
+    url = doc.getStringSafe("url"),
+    promo = doc.getDocumentSafe("promo")?.let { documentToVideoPromo(it) } ?: VideoPromo(),
+    season = doc.getStringSafe("season"),
+    year = doc.getIntSafe("year"),
+    airing = doc.getBooleanSafe("airing"),
+    type = doc.getStringSafe("type"),
+    subtype = doc.getStringSafe("subtype"),
+    page = doc.getIntSafe("page"),
 )

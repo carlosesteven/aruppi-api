@@ -1,6 +1,6 @@
 package com.jeluchu.core.extensions
 
-import com.jeluchu.core.utils.TimeUnit
+import com.jeluchu.core.enums.TimeUnit
 import com.jeluchu.core.utils.TimerKey
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters.eq

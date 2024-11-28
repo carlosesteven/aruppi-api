@@ -1,6 +1,6 @@
 package com.jeluchu.core.messages
 
-import com.jeluchu.core.utils.Day
+import com.jeluchu.core.enums.Day
 
 sealed class ErrorMessages(val message: String) {
     data object NotFound : ErrorMessages("Nyaaaaaaaan! This request has not been found by our alpaca-neko")

@@ -1,6 +1,9 @@
 package com.jeluchu.features.schedule.services
 
 import com.jeluchu.core.connection.RestClient
+import com.jeluchu.core.enums.Day
+import com.jeluchu.core.enums.TimeUnit
+import com.jeluchu.core.enums.parseDay
 import com.jeluchu.core.extensions.needsUpdate
 import com.jeluchu.core.extensions.update
 import com.jeluchu.core.messages.ErrorMessages

@@ -1,16 +1,16 @@
 package com.jeluchu.features.rankings.services
 
 import com.jeluchu.core.connection.RestClient
+import com.jeluchu.core.enums.*
 import com.jeluchu.core.extensions.needsUpdate
 import com.jeluchu.core.extensions.update
 import com.jeluchu.core.messages.ErrorMessages
 import com.jeluchu.core.models.ErrorResponse
-import com.jeluchu.core.models.jikan.anime.AnimeData.Companion.toDayEntity
+import com.jeluchu.core.models.jikan.anime.AnimeData.Companion.toTopEntity
+import com.jeluchu.core.models.jikan.search.Search
 import com.jeluchu.core.utils.*
-import com.jeluchu.features.anime.mappers.documentToAnimeDirectoryEntity
-import com.jeluchu.features.anime.mappers.documentToMoreInfoEntity
 import com.jeluchu.features.anime.mappers.documentToScheduleDayEntity
-import com.jeluchu.features.schedule.models.ScheduleData
+import com.jeluchu.features.anime.mappers.documentToTopEntity
 import com.jeluchu.features.schedule.models.ScheduleEntity
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Filters
@@ -25,52 +25,54 @@ class RankingsService(
     database: MongoDatabase
 ) {
     private val timers = database.getCollection("timers")
-    private val schedules = database.getCollection("schedule")
+    private val ranking = database.getCollection("ranking")
 
     suspend fun getAnimeRanking(call: RoutingCall) {
+        val paramType = call.parameters["type"] ?: throw IllegalArgumentException(ErrorMessages.InvalidMalId.message)
+        val paramFilter = call.parameters["filter"] ?: throw IllegalArgumentException(ErrorMessages.InvalidMalId.message)
+        val paramPage = call.parameters["page"]?.toInt() ?: throw IllegalArgumentException(ErrorMessages.InvalidMalId.message)
+        if (parseType(paramType) == null) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidDay.message))
+        if (parseFilterType(paramFilter) == null) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidDay.message))
+
+        val timerKey = "${TimerKey.RANKING}_${paramType}_${paramFilter}_${paramPage}"
+
         val needsUpdate = timers.needsUpdate(
-            amount = 30,
-            unit = TimeUnit.DAY,
-            key = TimerKey.SCHEDULE
+            amount = 1,
+            key = timerKey,
+            unit = TimeUnit.MINUTE
         )
 
         if (needsUpdate) {
-            schedules.deleteMany(Document())
+            ranking.deleteMany(Document())
 
-            val response = ScheduleData(
-                sunday = getSchedule(Day.SUNDAY).data?.map { it.toDayEntity(Day.SUNDAY) }.orEmpty(),
-                friday = getSchedule(Day.FRIDAY).data?.map { it.toDayEntity(Day.FRIDAY) }.orEmpty(),
-                monday = getSchedule(Day.MONDAY).data?.map { it.toDayEntity(Day.MONDAY) }.orEmpty(),
-                tuesday = getSchedule(Day.TUESDAY).data?.map { it.toDayEntity(Day.TUESDAY) }.orEmpty(),
-                thursday = getSchedule(Day.THURSDAY).data?.map { it.toDayEntity(Day.THURSDAY) }.orEmpty(),
-                saturday = getSchedule(Day.SATURDAY).data?.map { it.toDayEntity(Day.SATURDAY) }.orEmpty(),
-                wednesday = getSchedule(Day.WEDNESDAY).data?.map { it.toDayEntity(Day.WEDNESDAY) }.orEmpty()
-            )
+            val params = mutableListOf<String>()
+            params.add("type=$paramType")
+            params.add("page=$paramPage")
+            params.add("filter=$paramFilter")
+
+            val response = RestClient.request(
+                BaseUrls.JIKAN + Endpoints.TOP_ANIME + "?${params.joinToString("&")}",
+                Search.serializer()
+            ).data?.mapIndexed { index, anime ->
+                anime.toTopEntity(
+                    page = paramPage,
+                    rank = index + 1,
+                    type = paramType,
+                    subType = paramFilter
+                )
+            }
 
             val documentsToInsert = parseScheduleDataToDocuments(response)
-            if (documentsToInsert.isNotEmpty()) schedules.insertMany(documentsToInsert)
-            timers.update(TimerKey.SCHEDULE)
+            if (documentsToInsert.isNotEmpty()) ranking.insertMany(documentsToInsert)
+            timers.update(timerKey)
 
             call.respond(HttpStatusCode.OK, Json.encodeToString(response))
         } else {
-            val elements = schedules.find().toList()
-            val directory = elements.map { documentToScheduleDayEntity(it) }
+            val elements = ranking.find().toList()
+            val directory = elements.map { documentToTopEntity(it) }
             val json = Json.encodeToString(directory)
             call.respond(HttpStatusCode.OK, json)
         }
     }
-
-    suspend fun getScheduleByDay(call: RoutingCall) {
-        val param = call.parameters["day"] ?: throw IllegalArgumentException(ErrorMessages.InvalidMalId.message)
-        if (parseDay(param) == null) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidDay.message))
-
-        val elements = schedules.find(Filters.eq("day", param.lowercase())).toList()
-        val directory = elements.map { documentToScheduleDayEntity(it) }
-        val json = Json.encodeToString(directory)
-        call.respond(HttpStatusCode.OK, json)
-    }
-
-    private suspend fun getSchedule(day: Day) =
-        RestClient.request(BaseUrls.JIKAN + Endpoints.SCHEDULES + "/" + day, ScheduleEntity.serializer())
 }
 
