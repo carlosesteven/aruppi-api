@@ -38,7 +38,7 @@ fun MongoCollection<Document>.update(key: String) {
         .append(TimerKey.LAST_UPDATED, Date.from(currentTime))
 
     replaceOne(
-        eq(TimerKey.KEY, TimerKey.SCHEDULE),
+        eq(TimerKey.KEY, key),
         newTimestampDocument,
         ReplaceOptions().upsert(true)
     )

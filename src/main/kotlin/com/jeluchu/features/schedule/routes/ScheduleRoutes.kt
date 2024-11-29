@@ -9,7 +9,7 @@ import io.ktor.server.routing.*
 fun Route.scheduleEndpoints(
     mongoDatabase: MongoDatabase,
     service: ScheduleService = ScheduleService(mongoDatabase)
-) {
-    getToJson(Routes.SCHEDULE) { service.getSchedule(call) }
-    getToJson(Routes.SCHEDULE_DAY) { service.getScheduleByDay(call) }
+) = route(Routes.SCHEDULE) {
+    getToJson { service.getSchedule(call) }
+    getToJson(Routes.DAY) { service.getScheduleByDay(call) }
 }

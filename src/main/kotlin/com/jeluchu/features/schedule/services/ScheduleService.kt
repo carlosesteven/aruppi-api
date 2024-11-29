@@ -25,8 +25,8 @@ import org.bson.Document
 class ScheduleService(
     database: MongoDatabase
 ) {
-    private val timers = database.getCollection("timers")
-    private val schedules = database.getCollection("schedule")
+    private val timers = database.getCollection(Collections.TIMERS)
+    private val schedules = database.getCollection(Collections.SCHEDULES)
 
     suspend fun getSchedule(call: RoutingCall) {
         val needsUpdate = timers.needsUpdate(
@@ -48,7 +48,7 @@ class ScheduleService(
                 wednesday = getSchedule(Day.WEDNESDAY).data?.map { it.toDayEntity(Day.WEDNESDAY) }.orEmpty()
             )
 
-            val documentsToInsert = parseScheduleDataToDocuments(response)
+            val documentsToInsert = parseTopDataToDocuments(response)
             if (documentsToInsert.isNotEmpty()) schedules.insertMany(documentsToInsert)
             timers.update(TimerKey.SCHEDULE)
 

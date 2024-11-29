@@ -15,4 +15,5 @@ enum class AnimeTypes {
     TV_SPECIAL,
 }
 
-fun parseType(type: String) = AnimeTypes.entries.firstOrNull { it.name.equals(type, ignoreCase = true) }
+val animeTypesErrorList = AnimeTypes.entries.joinToString(", ") { it.name.lowercase() }
+fun parseAnimeType(type: String) = AnimeTypes.entries.firstOrNull { it.name.equals(type, ignoreCase = true) }

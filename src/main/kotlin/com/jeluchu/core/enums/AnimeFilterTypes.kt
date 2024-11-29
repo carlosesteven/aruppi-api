@@ -10,4 +10,5 @@ enum class AnimeFilterTypes {
     FAVORITE,
 }
 
-fun parseFilterType(type: String) = AnimeFilterTypes.entries.firstOrNull { it.name.equals(type, ignoreCase = true) }
+val animeFilterTypesErrorList = AnimeFilterTypes.entries.joinToString(", ") { it.name.lowercase() }
+fun parseAnimeFilterType(type: String) = AnimeFilterTypes.entries.firstOrNull { it.name.equals(type, ignoreCase = true) }

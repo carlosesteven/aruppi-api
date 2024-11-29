@@ -12,3 +12,10 @@ fun Route.getToJson(
     call.response.headers.append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
     withContext(Dispatchers.IO) { request() }
 }
+
+fun Route.getToJson(
+    request: suspend RoutingContext.() -> Unit
+): Route = get {
+    call.response.headers.append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+    withContext(Dispatchers.IO) { request() }
+}

@@ -4,7 +4,7 @@ import com.example.models.*
 import com.jeluchu.core.extensions.*
 import com.jeluchu.features.anime.models.anime.Images
 import com.jeluchu.features.anime.models.directory.AnimeDirectoryEntity
-import com.jeluchu.features.rankings.models.TopEntity
+import com.jeluchu.features.rankings.models.AnimeTopEntity
 import com.jeluchu.features.schedule.models.DayEntity
 import org.bson.Document
 
@@ -222,7 +222,7 @@ fun documentToScheduleDayEntity(doc: Document) = DayEntity(
     title = doc.getStringSafe("title")
 )
 
-fun documentToTopEntity(doc: Document) = TopEntity(
+fun documentToTopEntity(doc: Document) = AnimeTopEntity(
     malId = doc.getIntSafe("malId"),
     rank = doc.getIntSafe("rank"),
     score = doc.getFloatSafe("score"),

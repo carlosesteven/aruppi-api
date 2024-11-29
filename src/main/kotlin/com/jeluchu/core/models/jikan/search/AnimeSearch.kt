@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
  * Search data class.
  */
 @Serializable
-data class Search(
+data class AnimeSearch(
     /**
      * Pagination info for request
      */

@@ -2,6 +2,7 @@ package com.jeluchu.features.anime.services
 
 import com.jeluchu.core.messages.ErrorMessages
 import com.jeluchu.core.models.ErrorResponse
+import com.jeluchu.core.utils.Collections
 import com.jeluchu.features.anime.mappers.documentToAnimeDirectoryEntity
 import com.jeluchu.features.anime.mappers.documentToMoreInfoEntity
 import com.mongodb.client.MongoDatabase
@@ -15,7 +16,7 @@ import kotlinx.serialization.json.Json
 class AnimeService(
     database: MongoDatabase
 ) {
-    private val directoryCollection = database.getCollection("animedetails")
+    private val directoryCollection = database.getCollection(Collections.ANIME_DETAILS)
 
     suspend fun getDirectory(call: RoutingCall) = try {
         val elements = directoryCollection.find().toList()

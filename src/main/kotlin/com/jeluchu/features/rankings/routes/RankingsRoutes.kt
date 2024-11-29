@@ -9,12 +9,17 @@ import io.ktor.server.routing.*
 fun Route.rankingsEndpoints(
     mongoDatabase: MongoDatabase,
     service: RankingsService = RankingsService(mongoDatabase)
-) {
-    route(Routes.TOP) {
-        route(Routes.ANIME) {
-            getToJson(Routes.TOP_ANIME) { service.getAnimeRanking(call) }
-        }
+) = route(Routes.TOP) {
+    route(Routes.ANIME) {
+        getToJson(Routes.RANKINGS) { service.getAnimeRanking(call) }
     }
-
-    getToJson(Routes.TOP_MANGA) {  }
+    route(Routes.MANGA) {
+        getToJson(Routes.RANKINGS) { service.getMangaRanking(call) }
+    }
+    route(Routes.PEOPLE) {
+        getToJson(Routes.PAGE) { service.getPeopleRanking(call) }
+    }
+    route(Routes.CHARACTER) {
+        getToJson(Routes.PAGE) { service.getCharacterRanking(call) }
+    }
 }
