@@ -1,7 +1,7 @@
 package com.jeluchu.features.schedule.models
 
-import com.jeluchu.core.models.jikan.search.Pagination
 import com.jeluchu.core.models.jikan.anime.AnimeData
+import com.jeluchu.core.models.jikan.search.Pagination
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

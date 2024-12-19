@@ -1,12 +1,14 @@
 package com.jeluchu.features.anime.mappers
 
-import com.example.models.*
 import com.jeluchu.core.extensions.*
-import com.jeluchu.features.anime.models.anime.Images
+import com.jeluchu.features.anime.models.anime.*
 import com.jeluchu.features.anime.models.directory.AnimeDirectoryEntity
 import com.jeluchu.features.rankings.models.AnimeTopEntity
 import com.jeluchu.features.schedule.models.DayEntity
 import org.bson.Document
+import java.sql.Timestamp
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 fun documentToAnimeDirectoryEntity(doc: Document) = AnimeDirectoryEntity(
     rank = doc.getIntSafe("rank"),
@@ -26,7 +28,7 @@ fun documentToAnimeDirectoryEntity(doc: Document) = AnimeDirectoryEntity(
 
 fun documentToMoreInfoEntity(doc: Document): MoreInfoEntity {
     return MoreInfoEntity(
-        id = doc.getLongSafe("id"),
+        id = doc.getObjectId("_id").toString(),
         malId = doc.getIntSafe("malId"),
         title = doc.getStringSafe("title"),
         poster = doc.getStringSafe("poster"),
@@ -155,9 +157,14 @@ fun documentToIndividual(doc: Document): Individual {
 
 fun documentToMergedEpisode(doc: Document): MergedEpisode {
     return MergedEpisode(
-        number = doc.getIntSafe("number", 0),
-        ids = doc.getListSafe<Document>("ids").map { documentToAnimeSource(it) }.toMutableList(),
-        nextEpisodeDate = doc.getStringSafe("nextEpisodeDate")
+        malId = doc.getIntSafe("malId"),
+        title = doc.getStringSafe("title"),
+        titleJapanese = doc.getStringSafe("titleJapanese"),
+        titleRomanji = doc.getStringSafe("titleRomanji"),
+        aired = doc.getStringSafe("aired", ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)),
+        score = doc.getFloatSafe("score"),
+        filler = doc.getBooleanSafe("filler"),
+        recap = doc.getBooleanSafe("recap")
     )
 }
 

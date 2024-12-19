@@ -3,7 +3,6 @@ package com.jeluchu.core.models.jikan.anime
 import com.jeluchu.core.enums.Day
 import com.jeluchu.core.utils.toVideoPromo
 import com.jeluchu.features.rankings.models.AnimeTopEntity
-import com.jeluchu.features.rankings.models.MangaTopEntity
 import com.jeluchu.features.schedule.models.DayEntity
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

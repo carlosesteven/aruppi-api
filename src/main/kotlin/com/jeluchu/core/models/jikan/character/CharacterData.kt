@@ -1,9 +1,7 @@
 package fordelete
 
 import com.jeluchu.core.models.jikan.anime.Images
-import com.jeluchu.core.models.jikan.people.PeopleData
 import com.jeluchu.features.rankings.models.CharacterTopEntity
-import com.jeluchu.features.rankings.models.PeopleTopEntity
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

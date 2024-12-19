@@ -1,6 +1,5 @@
 package com.jeluchu.core.models.jikan.anime
 
-import com.jeluchu.core.models.jikan.anime.Prop
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

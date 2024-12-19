@@ -47,3 +47,5 @@ out/
 gradlew
 
 gradlew.bat
+
+.kotlin/

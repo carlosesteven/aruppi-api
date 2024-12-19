@@ -1,6 +1,6 @@
 package com.jeluchu.features.rankings.models
 
-import com.example.models.VideoPromo
+import com.jeluchu.features.anime.models.anime.VideoPromo
 import kotlinx.serialization.Serializable
 
 @Serializable

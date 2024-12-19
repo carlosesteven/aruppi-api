@@ -1,4 +1,4 @@
-package com.example.models
+package com.jeluchu.features.anime.models.anime
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -7,8 +7,8 @@ import org.bson.Document
 
 @Serializable
 data class MoreInfoEntity(
-    val id: Long? = null,
     var malId: Int = 0,
+    val id: String = "",
     var title: String = "",
     var poster: String = "",
     var cover: String = "",

@@ -5,10 +5,14 @@ object BaseUrls {
 }
 
 object Endpoints {
+    const val FULL = "full"
+    const val ANIME = "anime/"
     const val SCHEDULES = "schedules"
     const val TOP_ANIME = "top/anime"
     const val TOP_MANGA = "top/manga"
     const val TOP_PEOPLE = "top/people"
+    const val STATISTICS = "statistics"
+    const val CHARACTERS = "characters"
     const val TOP_CHARACTER = "top/characters"
 }
 
@@ -41,5 +45,6 @@ object Collections {
     const val ANIME_RANKING = "anime_ranking"
     const val MANGA_RANKING = "manga_ranking"
     const val PEOPLE_RANKING = "people_ranking"
+    const val ANIME_DIRECTORY = "anime_directory"
     const val CHARACTER_RANKING = "character_ranking"
 }

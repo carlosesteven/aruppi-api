@@ -1,9 +1,9 @@
 package com.jeluchu.core.utils
 
-import com.example.models.VideoPromo
 import com.jeluchu.core.models.jikan.anime.ImageFormat
 import com.jeluchu.core.models.jikan.anime.Trailer
 import com.jeluchu.features.anime.models.anime.Images
+import com.jeluchu.features.anime.models.anime.VideoPromo
 
 fun Trailer.toVideoPromo() = VideoPromo(
     url = url.orEmpty(),
