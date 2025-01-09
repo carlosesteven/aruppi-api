@@ -48,22 +48,23 @@ class ScheduleService(
                 wednesday = getSchedule(Day.WEDNESDAY).data?.map { it.toDayEntity(Day.WEDNESDAY) }.orEmpty()
             )
 
-            val documentsToInsert = parseTopDataToDocuments(response)
-            if (documentsToInsert.isNotEmpty()) schedules.insertMany(documentsToInsert)
+            val elements = parseTopDataToDocuments(response)
+            if (elements.isNotEmpty()) schedules.insertMany(elements)
             timers.update(TimerKey.SCHEDULE)
 
-            call.respond(HttpStatusCode.OK, Json.encodeToString(response))
+            call.respond(HttpStatusCode.OK, elements.documentWeekMapper())
         } else {
             val elements = schedules.find().toList()
-            val directory = elements.map { documentToScheduleDayEntity(it) }
-            val json = Json.encodeToString(directory)
-            call.respond(HttpStatusCode.OK, json)
+            call.respond(HttpStatusCode.OK, elements.documentWeekMapper())
         }
     }
 
     suspend fun getScheduleByDay(call: RoutingCall) {
         val param = call.parameters["day"] ?: throw IllegalArgumentException(ErrorMessages.InvalidMalId.message)
-        if (parseDay(param) == null) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidDay.message))
+        if (parseDay(param) == null) call.respond(
+            HttpStatusCode.BadRequest,
+            ErrorResponse(ErrorMessages.InvalidDay.message)
+        )
 
         val elements = schedules.find(Filters.eq("day", param.lowercase())).toList()
         val directory = elements.map { documentToScheduleDayEntity(it) }
@@ -71,6 +72,13 @@ class ScheduleService(
         call.respond(HttpStatusCode.OK, json)
     }
 
-    private suspend fun getSchedule(day: Day) =
-        RestClient.request(BaseUrls.JIKAN + Endpoints.SCHEDULES + "/" + day, ScheduleEntity.serializer())
+    private suspend fun getSchedule(day: Day) = RestClient.requestWithDelay(
+        url = BaseUrls.JIKAN + Endpoints.SCHEDULES + "/" + day,
+        deserializer = ScheduleEntity.serializer()
+    )
+
+    private fun List<Document>.documentWeekMapper(): String {
+        val directory = map { documentToScheduleDayEntity(it) }
+        return Json.encodeToString(directory)
+    }
 }
