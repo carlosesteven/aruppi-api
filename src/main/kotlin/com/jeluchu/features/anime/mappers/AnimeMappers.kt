@@ -1,8 +1,10 @@
 package com.jeluchu.features.anime.mappers
 
 import com.jeluchu.core.extensions.*
+import com.jeluchu.core.models.animeflv.lastepisodes.EpisodeEntity
 import com.jeluchu.features.anime.models.anime.*
 import com.jeluchu.features.anime.models.directory.AnimeDirectoryEntity
+import com.jeluchu.features.anime.models.directory.AnimeTypeEntity
 import com.jeluchu.features.rankings.models.AnimeTopEntity
 import com.jeluchu.features.schedule.models.DayEntity
 import org.bson.Document
@@ -243,4 +245,19 @@ fun documentToTopEntity(doc: Document) = AnimeTopEntity(
     type = doc.getStringSafe("type"),
     subtype = doc.getStringSafe("subtype"),
     page = doc.getIntSafe("page"),
+)
+
+fun documentToAnimeTypeEntity(doc: Document) = AnimeTypeEntity(
+    score = doc.getString("score"),
+    malId = doc.getIntSafe("malId"),
+    type = doc.getStringSafe("type"),
+    title = doc.getStringSafe("title"),
+    image = doc.getStringSafe("poster"),
+    episodes = doc.getListSafe<Document>("episodes").size
+)
+
+fun documentToLastEpisodesEntity(doc: Document) = EpisodeEntity(
+    number = doc.getIntSafe("number"),
+    title = doc.getStringSafe("title"),
+    image = doc.getStringSafe("image")
 )

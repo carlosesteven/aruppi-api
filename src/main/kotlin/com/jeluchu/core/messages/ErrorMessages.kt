@@ -7,6 +7,7 @@ sealed class ErrorMessages(val message: String) {
     data object AnimeNotFound : ErrorMessages("This malId is not in our database")
     data object InvalidMalId : ErrorMessages("The provided id of malId is invalid")
     data object InvalidDay : ErrorMessages("Invalid 'day' parameter. Valid values are: ${Day.entries.joinToString(", ") { it.name.lowercase() }}")
+    data object InvalidAnimeType : ErrorMessages("Invalid 'type' parameter. Valid values are: ${AnimeTypes.entries.joinToString(", ") { it.name.lowercase() }}")
     data object InvalidTopAnimeType : ErrorMessages("Invalid 'type' parameter. Valid values are: $animeTypesErrorList")
     data object InvalidTopAnimeFilterType : ErrorMessages("Invalid 'type' parameter. Valid values are: $animeFilterTypesErrorList")
     data object InvalidTopMangaType : ErrorMessages("Invalid 'type' parameter. Valid values are: $mangaTypesErrorList")
