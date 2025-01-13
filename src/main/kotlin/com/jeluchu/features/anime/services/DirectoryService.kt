@@ -9,6 +9,7 @@ import com.jeluchu.core.models.ErrorResponse
 import com.jeluchu.core.models.PaginationResponse
 import com.jeluchu.core.utils.Collections
 import com.jeluchu.core.utils.TimerKey
+import com.jeluchu.features.anime.mappers.documentToAnimeDirectoryEntity
 import com.jeluchu.features.anime.mappers.documentToAnimeTypeEntity
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Filters
@@ -75,7 +76,7 @@ class DirectoryService(
                 .limit(size)
                 .toList()
 
-            val responseItems = elements.map { documentToAnimeTypeEntity(it) }
+            val responseItems = elements.map { documentToAnimeDirectoryEntity(it) }
             val response = PaginationResponse(
                 page = page,
                 data = responseItems,
@@ -137,7 +138,7 @@ class DirectoryService(
                 .limit(size)
                 .toList()
 
-            val responseItems = elements.map { documentToAnimeTypeEntity(it) }
+            val responseItems = elements.map { documentToAnimeDirectoryEntity(it) }
             val response = PaginationResponse(
                 page = page,
                 data = responseItems,

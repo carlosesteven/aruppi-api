@@ -14,22 +14,6 @@ import org.bson.Document
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-fun documentToAnimeDirectoryEntity(doc: Document) = AnimeDirectoryEntity(
-    rank = doc.getIntSafe("rank"),
-    year = doc.getIntSafe("year"),
-    url = doc.getStringSafe("url"),
-    malId = doc.getIntSafe("malId"),
-    type = doc.getStringSafe("type"),
-    score = doc.getStringSafe("score"),
-    title = doc.getStringSafe("title"),
-    status = doc.getStringSafe("status"),
-    season = doc.getStringSafe("season"),
-    poster = doc.getStringSafe("poster"),
-    airing = doc.getBooleanSafe("airing"),
-    genres = doc.getListSafe<String>("genres"),
-    episodesCount = doc.getIntSafe("episodesCount")
-)
-
 fun documentToMoreInfoEntity(doc: Document): MoreInfoEntity {
     return MoreInfoEntity(
         id = doc.getObjectId("_id").toString(),
@@ -292,6 +276,17 @@ fun documentToAnimeTypeEntity(doc: Document) = AnimeTypeEntity(
     type = doc.getStringSafe("type"),
     title = doc.getStringSafe("title"),
     image = doc.getStringSafe("poster"),
+    episodes = doc.getListSafe<Document>("episodes").size
+)
+
+fun documentToAnimeDirectoryEntity(doc: Document) = AnimeTypeEntity(
+    score = doc.getString("score"),
+    malId = doc.getIntSafe("malId"),
+    year = doc.getIntSafe("year"),
+    season = doc.getStringSafe("season"),
+    type = doc.getStringSafe("type"),
+    title = doc.getStringSafe("title"),
+    image = doc.getStringSafe("image"),
     episodes = doc.getListSafe<Document>("episodes").size
 )
 
