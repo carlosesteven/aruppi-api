@@ -11,15 +11,15 @@ fun Route.rankingsEndpoints(
     service: RankingsService = RankingsService(mongoDatabase)
 ) = route(Routes.TOP) {
     route(Routes.ANIME) {
-        getToJson(Routes.RANKINGS) { service.getAnimeRanking(call) }
+        getToJson { service.getAnimeRanking(call) }
     }
     route(Routes.MANGA) {
-        getToJson(Routes.RANKINGS) { service.getMangaRanking(call) }
+        getToJson { service.getMangaRanking(call) }
     }
     route(Routes.PEOPLE) {
-        getToJson(Routes.PAGE) { service.getPeopleRanking(call) }
+        getToJson { service.getPeopleRanking(call) }
     }
     route(Routes.CHARACTER) {
-        getToJson(Routes.PAGE) { service.getCharacterRanking(call) }
+        getToJson { service.getCharacterRanking(call) }
     }
 }

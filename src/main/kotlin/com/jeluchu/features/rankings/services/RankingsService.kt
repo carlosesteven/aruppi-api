@@ -6,6 +6,7 @@ import com.jeluchu.core.extensions.needsUpdate
 import com.jeluchu.core.extensions.update
 import com.jeluchu.core.messages.ErrorMessages
 import com.jeluchu.core.models.ErrorResponse
+import com.jeluchu.core.models.PaginationResponse
 import com.jeluchu.core.models.jikan.anime.AnimeData.Companion.toAnimeTopEntity
 import com.jeluchu.core.models.jikan.character.CharacterSearch
 import com.jeluchu.core.models.jikan.manga.MangaData.Companion.toMangaTopEntity
@@ -17,7 +18,10 @@ import com.jeluchu.core.utils.BaseUrls
 import com.jeluchu.core.utils.Collections
 import com.jeluchu.core.utils.Endpoints
 import com.jeluchu.core.utils.parseDataToDocuments
-import com.jeluchu.features.anime.mappers.documentToTopEntity
+import com.jeluchu.features.anime.mappers.documentToAnimeTopEntity
+import com.jeluchu.features.anime.mappers.documentToCharacterTopEntity
+import com.jeluchu.features.anime.mappers.documentToMangaTopEntity
+import com.jeluchu.features.anime.mappers.documentToPeopleTopEntity
 import com.jeluchu.features.rankings.models.AnimeTopEntity
 import com.jeluchu.features.rankings.models.CharacterTopEntity
 import com.jeluchu.features.rankings.models.MangaTopEntity
@@ -41,13 +45,15 @@ class RankingsService(
     private val characterRanking = database.getCollection(Collections.CHARACTER_RANKING)
 
     suspend fun getAnimeRanking(call: RoutingCall) {
-        val paramType = call.parameters["type"] ?: throw IllegalArgumentException(ErrorMessages.InvalidTopAnimeType.message)
-        val paramPage = call.parameters["page"]?.toInt() ?: throw IllegalArgumentException(ErrorMessages.InvalidMalId.message)
-        val paramFilter = call.parameters["filter"] ?: throw IllegalArgumentException(ErrorMessages.InvalidTopAnimeFilterType.message)
-        if (parseAnimeType(paramType) == null) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidTopAnimeType.message))
-        if (parseAnimeFilterType(paramFilter) == null) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidTopAnimeFilterType.message))
+        val filter = call.request.queryParameters["filter"] ?: "airing"
+        val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
+        val size = call.request.queryParameters["size"]?.toIntOrNull() ?: 25
+        val type = call.parameters["type"] ?: throw IllegalArgumentException(ErrorMessages.InvalidTopAnimeType.message)
 
-        val timerKey = "${Collections.ANIME_RANKING}_${paramType}_${paramFilter}_${paramPage}"
+        if (size > 25) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidValueTopPage.message))
+        if (parseAnimeType(type) == null) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidTopAnimeType.message))
+
+        val timerKey = "${Collections.ANIME_RANKING}_${type}_${filter}_${page}"
 
         val needsUpdate = timers.needsUpdate(
             amount = 30,
@@ -55,19 +61,22 @@ class RankingsService(
             unit = TimeUnit.DAY
         )
 
+        if (page < 1 || size < 1) call.respond(HttpStatusCode.BadRequest, ErrorMessages.InvalidSizeAndPage.message)
+        val skipCount = (page - 1) * size
+
         if (needsUpdate) {
             animeRanking.deleteMany(
                 Filters.and(
-                    Filters.eq("page", paramPage),
-                    Filters.eq("type", paramType),
-                    Filters.eq("subtype", paramFilter)
+                    Filters.eq("page", page),
+                    Filters.eq("type", type),
+                    Filters.eq("subtype", filter)
                 )
             )
 
             val params = mutableListOf<String>()
-            params.add("type=$paramType")
-            params.add("page=$paramPage")
-            params.add("filter=$paramFilter")
+            params.add("type=$type")
+            params.add("page=$page")
+            params.add("filter=$filter")
 
             val response = RestClient.request(
                 BaseUrls.JIKAN + Endpoints.TOP_ANIME + "?${params.joinToString("&")}",
@@ -75,9 +84,9 @@ class RankingsService(
             ).data?.map { anime ->
                 anime.toAnimeTopEntity(
                     top = "anime",
-                    page = paramPage,
-                    type = paramType,
-                    subType = paramFilter
+                    page = page,
+                    type = type,
+                    subType = filter
                 )
             }
 
@@ -85,42 +94,66 @@ class RankingsService(
             if (documentsToInsert.isNotEmpty()) animeRanking.insertMany(documentsToInsert)
             timers.update(timerKey)
 
-            call.respond(HttpStatusCode.OK, Json.encodeToString(response))
+            val elements = documentsToInsert.map { documentToAnimeTopEntity(it) }
+
+            val paginationResponse = PaginationResponse(
+                page = page,
+                size = size,
+                data = elements
+            )
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(paginationResponse))
         } else {
-            val elements = animeRanking.find().toList()
-            val directory = elements.map { documentToTopEntity(it) }
-            val json = Json.encodeToString(directory)
-            call.respond(HttpStatusCode.OK, json)
+            val animes = animeRanking
+                .find(Filters.eq("type", type.lowercase()))
+                .skip(skipCount)
+                .limit(size)
+                .toList()
+
+            val elements = animes.map { documentToAnimeTopEntity(it) }
+            val response = PaginationResponse(
+                page = page,
+                size = size,
+                data = elements
+            )
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(response))
         }
     }
 
     suspend fun getMangaRanking(call: RoutingCall) {
-        val paramType = call.parameters["type"] ?: throw IllegalArgumentException(ErrorMessages.InvalidTopMangaType.message)
-        val paramPage = call.parameters["page"]?.toInt() ?: throw IllegalArgumentException(ErrorMessages.InvalidMalId.message)
-        val paramFilter = call.parameters["filter"] ?: throw IllegalArgumentException(ErrorMessages.InvalidTopMangaFilterType.message)
-        if (parseMangaType(paramType) == null) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidTopMangaType.message))
-        if (parseMangaFilterType(paramFilter) == null) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidTopMangaFilterType.message))
+        val filter = call.request.queryParameters["filter"] ?: "publishing"
+        val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
+        val size = call.request.queryParameters["size"]?.toIntOrNull() ?: 25
+        val type = call.parameters["type"] ?: throw IllegalArgumentException(ErrorMessages.InvalidTopMangaType.message)
 
-        val timerKey = "${Collections.MANGA_RANKING}_${paramType}_${paramFilter}_${paramPage}"
+        if (size > 25) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidValueTopPage.message))
+        if (parseMangaType(type) == null) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidTopAnimeType.message))
+
+        val timerKey = "${Collections.MANGA_RANKING}_${type}_${filter}_${page}"
+
         val needsUpdate = timers.needsUpdate(
             amount = 30,
             key = timerKey,
             unit = TimeUnit.DAY
         )
 
+        if (page < 1 || size < 1) call.respond(HttpStatusCode.BadRequest, ErrorMessages.InvalidSizeAndPage.message)
+        val skipCount = (page - 1) * size
+
         if (needsUpdate) {
             mangaRanking.deleteMany(
                 Filters.and(
-                    Filters.eq("page", paramPage),
-                    Filters.eq("type", paramType),
-                    Filters.eq("subtype", paramFilter)
+                    Filters.eq("page", page),
+                    Filters.eq("type", type),
+                    Filters.eq("subtype", filter)
                 )
             )
 
             val params = mutableListOf<String>()
-            params.add("type=$paramType")
-            params.add("page=$paramPage")
-            params.add("filter=$paramFilter")
+            params.add("type=$type")
+            params.add("page=$page")
+            params.add("filter=$filter")
 
             val response = RestClient.request(
                 BaseUrls.JIKAN + Endpoints.TOP_MANGA + "?${params.joinToString("&")}",
@@ -128,9 +161,9 @@ class RankingsService(
             ).data?.map { anime ->
                 anime.toMangaTopEntity(
                     top = "manga",
-                    page = paramPage,
-                    type = paramType,
-                    subType = paramFilter
+                    page = page,
+                    type = type,
+                    subType = filter
                 )
             }
 
@@ -138,32 +171,58 @@ class RankingsService(
             if (documentsToInsert.isNotEmpty()) mangaRanking.insertMany(documentsToInsert)
             timers.update(timerKey)
 
-            call.respond(HttpStatusCode.OK, Json.encodeToString(response))
+            val elements = documentsToInsert.map { documentToMangaTopEntity(it) }
+
+            val paginationResponse = PaginationResponse(
+                page = page,
+                size = size,
+                data = elements
+            )
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(paginationResponse))
         } else {
-            val elements = mangaRanking.find().toList()
-            val directory = elements.map { documentToTopEntity(it) }
-            val json = Json.encodeToString(directory)
-            call.respond(HttpStatusCode.OK, json)
+            val mangas = mangaRanking
+                .find(Filters.eq("type", type.lowercase()))
+                .skip(skipCount)
+                .limit(size)
+                .toList()
+
+            val elements = mangas.map { documentToMangaTopEntity(it) }
+            val response = PaginationResponse(
+                page = page,
+                size = size,
+                data = elements
+            )
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(response))
         }
     }
 
     suspend fun getPeopleRanking(call: RoutingCall) {
-        val paramPage = call.parameters["page"]?.toInt() ?: throw IllegalArgumentException(ErrorMessages.InvalidMalId.message)
-        val timerKey = "${Collections.PEOPLE_RANKING}_${paramPage}"
+        val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
+        val size = call.request.queryParameters["size"]?.toIntOrNull() ?: 25
+
+        if (size > 25) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidValueTopPage.message))
+        val timerKey = "${Collections.PEOPLE_RANKING}_${page}"
+
         val needsUpdate = timers.needsUpdate(
             amount = 30,
             key = timerKey,
             unit = TimeUnit.DAY
         )
 
-        if (needsUpdate) { peopleRanking.deleteMany(Filters.and(Filters.eq("page", paramPage)))
+        if (page < 1 || size < 1) call.respond(HttpStatusCode.BadRequest, ErrorMessages.InvalidSizeAndPage.message)
+        val skipCount = (page - 1) * size
+
+        if (needsUpdate) {
+            peopleRanking.deleteMany(Filters.and(Filters.eq("page", page)))
             val response = RestClient.request(
-                BaseUrls.JIKAN + Endpoints.TOP_PEOPLE + "?page=$paramPage",
+                BaseUrls.JIKAN + Endpoints.TOP_PEOPLE + "?page=$page",
                 PeopleSearch.serializer()
             ).data?.map { anime ->
                 anime.toPeopleTopEntity(
                     top = "people",
-                    page = paramPage
+                    page = page
                 )
             }
 
@@ -171,32 +230,58 @@ class RankingsService(
             if (documentsToInsert.isNotEmpty()) peopleRanking.insertMany(documentsToInsert)
             timers.update(timerKey)
 
-            call.respond(HttpStatusCode.OK, Json.encodeToString(response))
+            val elements = documentsToInsert.map { documentToPeopleTopEntity(it) }
+
+            val paginationResponse = PaginationResponse(
+                page = page,
+                size = size,
+                data = elements
+            )
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(paginationResponse))
         } else {
-            val elements = peopleRanking.find().toList()
-            val directory = elements.map { documentToTopEntity(it) }
-            val json = Json.encodeToString(directory)
-            call.respond(HttpStatusCode.OK, json)
+            val peoples = peopleRanking
+                .find()
+                .skip(skipCount)
+                .limit(size)
+                .toList()
+
+            val elements = peoples.map { documentToPeopleTopEntity(it) }
+            val response = PaginationResponse(
+                page = page,
+                size = size,
+                data = elements
+            )
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(response))
         }
     }
 
     suspend fun getCharacterRanking(call: RoutingCall) {
-        val paramPage = call.parameters["page"]?.toInt() ?: throw IllegalArgumentException(ErrorMessages.InvalidMalId.message)
-        val timerKey = "${Collections.CHARACTER_RANKING}_${paramPage}"
+        val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
+        val size = call.request.queryParameters["size"]?.toIntOrNull() ?: 25
+
+        if (size > 25) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidValueTopPage.message))
+        val timerKey = "${Collections.CHARACTER_RANKING}_${page}"
+
         val needsUpdate = timers.needsUpdate(
             amount = 30,
             key = timerKey,
             unit = TimeUnit.DAY
         )
 
-        if (needsUpdate) { characterRanking.deleteMany(Filters.and(Filters.eq("page", paramPage)))
+        if (page < 1 || size < 1) call.respond(HttpStatusCode.BadRequest, ErrorMessages.InvalidSizeAndPage.message)
+        val skipCount = (page - 1) * size
+
+        if (needsUpdate) {
+            characterRanking.deleteMany(Filters.and(Filters.eq("page", page)))
             val response = RestClient.request(
-                BaseUrls.JIKAN + Endpoints.TOP_CHARACTER + "?page=$paramPage",
+                BaseUrls.JIKAN + Endpoints.TOP_CHARACTER + "?page=$page",
                 CharacterSearch.serializer()
             ).data?.map { anime ->
                 anime.toCharacterTopEntity(
                     top = "character",
-                    page = paramPage
+                    page = page
                 )
             }
 
@@ -204,12 +289,30 @@ class RankingsService(
             if (documentsToInsert.isNotEmpty()) characterRanking.insertMany(documentsToInsert)
             timers.update(timerKey)
 
-            call.respond(HttpStatusCode.OK, Json.encodeToString(response))
+            val elements = documentsToInsert.map { documentToCharacterTopEntity(it) }
+
+            val paginationResponse = PaginationResponse(
+                page = page,
+                size = size,
+                data = elements
+            )
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(paginationResponse))
         } else {
-            val elements = characterRanking.find().toList()
-            val directory = elements.map { documentToTopEntity(it) }
-            val json = Json.encodeToString(directory)
-            call.respond(HttpStatusCode.OK, json)
+            val characters = characterRanking
+                .find()
+                .skip(skipCount)
+                .limit(size)
+                .toList()
+
+            val elements = characters.map { documentToCharacterTopEntity(it) }
+            val response = PaginationResponse(
+                page = page,
+                size = size,
+                data = elements
+            )
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(response))
         }
     }
 }

@@ -6,9 +6,11 @@ import com.jeluchu.features.anime.models.anime.*
 import com.jeluchu.features.anime.models.directory.AnimeDirectoryEntity
 import com.jeluchu.features.anime.models.directory.AnimeTypeEntity
 import com.jeluchu.features.rankings.models.AnimeTopEntity
+import com.jeluchu.features.rankings.models.CharacterTopEntity
+import com.jeluchu.features.rankings.models.MangaTopEntity
+import com.jeluchu.features.rankings.models.PeopleTopEntity
 import com.jeluchu.features.schedule.models.DayEntity
 import org.bson.Document
-import java.sql.Timestamp
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -231,7 +233,7 @@ fun documentToScheduleDayEntity(doc: Document) = DayEntity(
     title = doc.getStringSafe("title")
 )
 
-fun documentToTopEntity(doc: Document) = AnimeTopEntity(
+fun documentToAnimeTopEntity(doc: Document) = AnimeTopEntity(
     malId = doc.getIntSafe("malId"),
     rank = doc.getIntSafe("rank"),
     score = doc.getFloatSafe("score"),
@@ -244,6 +246,41 @@ fun documentToTopEntity(doc: Document) = AnimeTopEntity(
     airing = doc.getBooleanSafe("airing"),
     type = doc.getStringSafe("type"),
     subtype = doc.getStringSafe("subtype"),
+    page = doc.getIntSafe("page"),
+)
+
+fun documentToMangaTopEntity(doc: Document) = MangaTopEntity(
+    malId = doc.getIntSafe("malId"),
+    rank = doc.getIntSafe("rank"),
+    score = doc.getDoubleSafe("score"),
+    title = doc.getStringSafe("title"),
+    image = doc.getStringSafe("image"),
+    url = doc.getStringSafe("url"),
+    volumes = doc.getIntSafe("volumes"),
+    chapters = doc.getIntSafe("chapters"),
+    status = doc.getStringSafe("status"),
+    type = doc.getStringSafe("type"),
+    subtype = doc.getStringSafe("subtype"),
+    page = doc.getIntSafe("page"),
+)
+
+fun documentToPeopleTopEntity(doc: Document) = PeopleTopEntity(
+    malId = doc.getIntSafe("malId"),
+    name = doc.getStringSafe("name"),
+    givenName = doc.getStringSafe("givenName"),
+    familyName = doc.getStringSafe("familyName"),
+    image = doc.getStringSafe("image"),
+    birthday = doc.getStringSafe("birthday"),
+    page = doc.getIntSafe("page"),
+    top = doc.getStringSafe("top"),
+)
+
+fun documentToCharacterTopEntity(doc: Document) = CharacterTopEntity(
+    malId = doc.getIntSafe("malId"),
+    name = doc.getStringSafe("name"),
+    nameKanji = doc.getStringSafe("nameKanji"),
+    image = doc.getStringSafe("image"),
+    top = doc.getStringSafe("top"),
     page = doc.getIntSafe("page"),
 )
 

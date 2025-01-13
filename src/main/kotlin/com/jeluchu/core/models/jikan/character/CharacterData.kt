@@ -37,7 +37,7 @@ data class CharacterData(
             top: String
         ) = CharacterTopEntity(
             malId = malId,
-            image = images?.webp?.large.orEmpty(),
+            image = images?.jpg?.generic.orEmpty(),
             name = name,
             nameKanji = nameKanji,
             top = top,

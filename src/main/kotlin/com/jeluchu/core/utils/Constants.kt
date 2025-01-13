@@ -29,7 +29,7 @@ object Routes {
     const val CHARACTER = "/characters"
     const val LAST_EPISODES = "/lastEpisodes"
     const val ID = "/{id}"
-    const val TYPE = "/{type}"
+    const val ANIME_TYPE = "/{type}"
     const val DAY = "/{day}"
     const val TOP_CHARACTER = "/top/character"
     const val RANKINGS = "/{type}/{filter}/{page}"

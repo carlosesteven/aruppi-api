@@ -1,12 +1,15 @@
 package com.jeluchu.features.anime.services
 
 import com.jeluchu.core.connection.RestClient
+import com.jeluchu.core.enums.AnimeTypes
 import com.jeluchu.core.enums.Day
 import com.jeluchu.core.enums.TimeUnit
+import com.jeluchu.core.enums.parseAnimeType
 import com.jeluchu.core.extensions.needsUpdate
 import com.jeluchu.core.extensions.update
 import com.jeluchu.core.messages.ErrorMessages
 import com.jeluchu.core.models.ErrorResponse
+import com.jeluchu.core.models.PaginationResponse
 import com.jeluchu.core.models.animeflv.lastepisodes.LastEpisodeData.Companion.toEpisodeEntity
 import com.jeluchu.core.models.animeflv.lastepisodes.LastEpisodes
 import com.jeluchu.core.models.jikan.anime.AnimeData.Companion.toDayEntity
@@ -14,10 +17,7 @@ import com.jeluchu.core.utils.BaseUrls
 import com.jeluchu.core.utils.Collections
 import com.jeluchu.core.utils.Endpoints
 import com.jeluchu.core.utils.TimerKey
-import com.jeluchu.features.anime.mappers.documentToAnimeDirectoryEntity
-import com.jeluchu.features.anime.mappers.documentToLastEpisodesEntity
-import com.jeluchu.features.anime.mappers.documentToMoreInfoEntity
-import com.jeluchu.features.anime.mappers.documentToScheduleDayEntity
+import com.jeluchu.features.anime.mappers.*
 import com.jeluchu.features.schedule.models.ScheduleEntity
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Filters
@@ -36,10 +36,46 @@ class AnimeService(
     private val lastEpisodesCollection = database.getCollection(Collections.LAST_EPISODES)
 
     suspend fun getDirectory(call: RoutingCall) = try {
-        val elements = directoryCollection.find().toList()
-        val directory = elements.map { documentToAnimeDirectoryEntity(it) }
-        val json = Json.encodeToString(directory)
-        call.respond(HttpStatusCode.OK, json)
+        val type = call.request.queryParameters["type"].orEmpty()
+        val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
+        val size = call.request.queryParameters["size"]?.toIntOrNull() ?: 10
+
+        if (page < 1 || size < 1) call.respond(HttpStatusCode.BadRequest, ErrorMessages.InvalidSizeAndPage.message)
+        val skipCount = (page - 1) * size
+
+        if (parseAnimeType(type) == null) {
+            val animes = directoryCollection
+                .find()
+                .skip(skipCount)
+                .limit(size)
+                .toList()
+
+            val elements = animes.map { documentToAnimeDirectoryEntity(it) }
+
+            val response = PaginationResponse(
+                page = page,
+                size = size,
+                data = elements
+            )
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(response))
+        } else {
+            val animes = directoryCollection
+                .find(Filters.eq("type", type.uppercase()))
+                .skip(skipCount)
+                .limit(size)
+                .toList()
+
+            val elements = animes.map { documentToAnimeTypeEntity(it) }
+
+            val response = PaginationResponse(
+                page = page,
+                size = size,
+                data = elements
+            )
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(response))
+        }
     } catch (ex: Exception) {
         call.respond(HttpStatusCode.Unauthorized, ErrorResponse(ErrorMessages.UnauthorizedMongo.message))
     }
@@ -85,6 +121,11 @@ class AnimeService(
 
     private fun List<Document>.documentToLastEpisodesEntity(): String {
         val directory = map { documentToLastEpisodesEntity(it) }
+        return Json.encodeToString(directory)
+    }
+
+    private fun List<Document>.documentAnimeTypeMapper(): String {
+        val directory = map { documentToAnimeTypeEntity(it) }
         return Json.encodeToString(directory)
     }
 }

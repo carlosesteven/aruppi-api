@@ -46,7 +46,7 @@ data class PeopleData(
             top: String
         ) = PeopleTopEntity(
             malId = malId,
-            image = images?.webp?.large.orEmpty(),
+            image = images?.jpg?.generic.orEmpty(),
             name = name,
             givenName = givenName,
             familyName = familyName,
