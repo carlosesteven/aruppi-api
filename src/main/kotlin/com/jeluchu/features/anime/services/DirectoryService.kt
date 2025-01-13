@@ -38,7 +38,9 @@ class DirectoryService(
             ErrorResponse(ErrorMessages.InvalidAnimeType.message)
         )
 
-        val timerKey = "${TimerKey.ANIME_TYPE}${param.lowercase()}"
+        val timerKey = "${TimerKey.ANIME_TYPE}${param.lowercase()}_$page"
+        val collection = database.getCollection(timerKey)
+
         val needsUpdate = timers.needsUpdate(
             amount = 30,
             key = timerKey,
@@ -46,7 +48,6 @@ class DirectoryService(
         )
 
         if (needsUpdate) {
-            val collection = database.getCollection(timerKey)
             collection.deleteMany(Document())
 
             val animes = directory
@@ -62,31 +63,88 @@ class DirectoryService(
 
             val response = PaginationResponse(
                 page = page,
-                size = size,
                 data = animeTypes,
-                totalItems = directory.countDocuments().toInt()
+                size = animeTypes.size
             )
 
             call.respond(HttpStatusCode.OK, Json.encodeToString(response))
         } else {
-            val elements = directory.find()
+            val elements = collection
+                .find()
                 .skip(skipCount)
                 .limit(size)
                 .toList()
 
+            val responseItems = elements.map { documentToAnimeTypeEntity(it) }
             val response = PaginationResponse(
                 page = page,
-                size = size,
-                totalItems = directory.countDocuments().toInt(),
-                data = elements.map { documentToAnimeTypeEntity(it) }
+                data = responseItems,
+                size = responseItems.size
             )
 
             call.respond(HttpStatusCode.OK, Json.encodeToString(response))
         }
     }
 
-    private fun List<Document>.documentAnimeTypeMapper(): String {
-        val directory = map { documentToAnimeTypeEntity(it) }
-        return Json.encodeToString(directory)
+    suspend fun getAnimeBySeason(call: RoutingCall) {
+        val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
+        val size = call.request.queryParameters["size"]?.toIntOrNull() ?: 10
+        val year = call.parameters["year"]?.toIntOrNull() ?: throw IllegalArgumentException(ErrorMessages.NotFound.message)
+        val season = call.parameters["season"] ?: throw IllegalArgumentException(ErrorMessages.NotFound.message)
+
+        if (page < 1 || size < 1) call.respond(HttpStatusCode.BadRequest, ErrorMessages.InvalidSizeAndPage.message)
+        val skipCount = (page - 1) * size
+
+        val timerKey = "${TimerKey.ANIME_TYPE}${year}_${season}_$page"
+        val collection = database.getCollection(timerKey)
+
+        val needsUpdate = timers.needsUpdate(
+            amount = 30,
+            key = timerKey,
+            unit = TimeUnit.DAY,
+        )
+
+        if (needsUpdate) {
+            collection.deleteMany(Document())
+
+            val animes = directory
+                .find(
+                    Filters.and(
+                        Filters.eq("year", year),
+                        Filters.eq("season", season)
+                    )
+                )
+                .skip(skipCount)
+                .limit(size)
+                .toList()
+
+            val animeTypes = animes.map { documentToAnimeTypeEntity(it) }
+            val documents = animeTypes.map { anime -> Document.parse(Json.encodeToString(anime)) }
+            if (documents.isNotEmpty()) collection.insertMany(documents)
+            timers.update(timerKey)
+
+            val response = PaginationResponse(
+                page = page,
+                data = animeTypes,
+                size = animeTypes.size
+            )
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(response))
+        } else {
+            val elements = collection
+                .find()
+                .skip(skipCount)
+                .limit(size)
+                .toList()
+
+            val responseItems = elements.map { documentToAnimeTypeEntity(it) }
+            val response = PaginationResponse(
+                page = page,
+                data = responseItems,
+                size = responseItems.size
+            )
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(response))
+        }
     }
 }

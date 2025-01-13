@@ -50,7 +50,7 @@ class AnimeService(
                 .limit(size)
                 .toList()
 
-            val elements = animes.map { documentToAnimeDirectoryEntity(it) }
+            val elements = animes.map { documentToAnimeTypeEntity(it) }
 
             val response = PaginationResponse(
                 page = page,
@@ -123,10 +123,4 @@ class AnimeService(
         val directory = map { documentToLastEpisodesEntity(it) }
         return Json.encodeToString(directory)
     }
-
-    private fun List<Document>.documentAnimeTypeMapper(): String {
-        val directory = map { documentToAnimeTypeEntity(it) }
-        return Json.encodeToString(directory)
-    }
 }
-
