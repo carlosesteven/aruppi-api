@@ -1,9 +1,8 @@
 package com.jeluchu.features.anime.mappers
 
 import com.jeluchu.core.extensions.*
-import com.jeluchu.core.models.animeflv.lastepisodes.EpisodeEntity
+import com.jeluchu.features.anime.models.lastepisodes.LastEpisodeData
 import com.jeluchu.features.anime.models.anime.*
-import com.jeluchu.features.anime.models.directory.AnimeDirectoryEntity
 import com.jeluchu.features.anime.models.directory.AnimeTypeEntity
 import com.jeluchu.features.rankings.models.AnimeTopEntity
 import com.jeluchu.features.rankings.models.CharacterTopEntity
@@ -233,6 +232,16 @@ fun documentToAnimeTopEntity(doc: Document) = AnimeTopEntity(
     page = doc.getIntSafe("page"),
 )
 
+fun documentToAnimeLastEpisodeEntity(doc: Document) = LastEpisodeData(
+    malId = doc.getIntSafe("malId"),
+    title = doc.getStringSafe("title"),
+    image = doc.getStringSafe("image"),
+    day = doc.getStringSafe("day"),
+    time = doc.getStringSafe("time"),
+    score = doc.getStringSafe("score"),
+    timezone = doc.getStringSafe("timezone")
+)
+
 fun documentToMangaTopEntity(doc: Document) = MangaTopEntity(
     malId = doc.getIntSafe("malId"),
     rank = doc.getIntSafe("rank"),
@@ -288,10 +297,4 @@ fun documentToAnimeDirectoryEntity(doc: Document) = AnimeTypeEntity(
     title = doc.getStringSafe("title"),
     image = doc.getStringSafe("image"),
     episodes = doc.getListSafe<Document>("episodes").size
-)
-
-fun documentToLastEpisodesEntity(doc: Document) = EpisodeEntity(
-    number = doc.getIntSafe("number"),
-    title = doc.getStringSafe("title"),
-    image = doc.getStringSafe("image")
 )
