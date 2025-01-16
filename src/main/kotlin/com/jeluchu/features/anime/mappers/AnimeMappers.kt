@@ -278,7 +278,7 @@ fun documentToCharacterTopEntity(doc: Document) = CharacterTopEntity(
 )
 
 fun documentToAnimeTypeEntity(doc: Document) = AnimeTypeEntity(
-    score = doc.getString("score"),
+    score = doc.getStringSafe("score"),
     malId = doc.getIntSafe("malId"),
     year = doc.getIntSafe("year"),
     season = doc.getStringSafe("season"),

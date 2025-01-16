@@ -39,7 +39,7 @@ class DirectoryService(
             ErrorResponse(ErrorMessages.InvalidAnimeType.message)
         )
 
-        val timerKey = "${TimerKey.ANIME_TYPE}${param.lowercase()}_$page"
+        val timerKey = "${TimerKey.ANIME_TYPE}${param.lowercase()}"
         val collection = database.getCollection(timerKey)
 
         val needsUpdate = timers.needsUpdate(
@@ -53,8 +53,6 @@ class DirectoryService(
 
             val animes = directory
                 .find(Filters.eq("type", param.uppercase()))
-                .skip(skipCount)
-                .limit(size)
                 .toList()
 
             val animeTypes = animes.map { documentToAnimeTypeEntity(it) }
@@ -62,10 +60,18 @@ class DirectoryService(
             if (documents.isNotEmpty()) collection.insertMany(documents)
             timers.update(timerKey)
 
+            val animeTypeDb = collection
+                .find()
+                .skip(skipCount)
+                .limit(size)
+                .toList()
+
+            val animeTypeEntity = animeTypeDb.map { documentToAnimeTypeEntity(it) }
+
             val response = PaginationResponse(
                 page = page,
-                data = animeTypes,
-                size = animeTypes.size
+                data = animeTypeEntity,
+                size = animeTypeEntity.size
             )
 
             call.respond(HttpStatusCode.OK, Json.encodeToString(response))
@@ -96,7 +102,7 @@ class DirectoryService(
         if (page < 1 || size < 1) call.respond(HttpStatusCode.BadRequest, ErrorMessages.InvalidSizeAndPage.message)
         val skipCount = (page - 1) * size
 
-        val timerKey = "${TimerKey.ANIME_TYPE}${year}_${season}_$page"
+        val timerKey = "${TimerKey.ANIME_TYPE}${year}_${season.lowercase()}"
         val collection = database.getCollection(timerKey)
 
         val needsUpdate = timers.needsUpdate(
@@ -112,22 +118,26 @@ class DirectoryService(
                 .find(
                     Filters.and(
                         Filters.eq("year", year),
-                        Filters.eq("season", season)
+                        Filters.eq("season", season.lowercase())
                     )
-                )
-                .skip(skipCount)
-                .limit(size)
-                .toList()
+                ).toList()
 
             val animeTypes = animes.map { documentToAnimeTypeEntity(it) }
             val documents = animeTypes.map { anime -> Document.parse(Json.encodeToString(anime)) }
             if (documents.isNotEmpty()) collection.insertMany(documents)
             timers.update(timerKey)
 
+            val animeSeasonDb = collection
+                .find()
+                .skip(skipCount)
+                .limit(size)
+                .toList()
+
+            val animeSeason = animeSeasonDb.map { documentToAnimeTypeEntity(it) }
             val response = PaginationResponse(
                 page = page,
-                data = animeTypes,
-                size = animeTypes.size
+                data = animeSeason,
+                size = animeSeason.size
             )
 
             call.respond(HttpStatusCode.OK, Json.encodeToString(response))
