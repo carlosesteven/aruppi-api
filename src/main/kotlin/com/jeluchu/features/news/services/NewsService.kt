@@ -7,7 +7,6 @@ import com.jeluchu.core.utils.Collections
 import com.jeluchu.core.utils.RssSources
 import com.jeluchu.core.utils.RssUrls
 import com.jeluchu.core.utils.parseDataToDocuments
-import com.jeluchu.features.anime.mappers.documentToAnimeTopEntity
 import com.jeluchu.features.news.mappers.documentToNewsEntity
 import com.jeluchu.features.news.mappers.toNews
 import com.jeluchu.features.news.models.NewEntity
@@ -58,7 +57,7 @@ class NewsService(
                 .find()
                 .toList()
 
-            val elements = animes.map { documentToAnimeTopEntity(it) }
+            val elements = animes.map { documentToNewsEntity(it) }
             call.respond(HttpStatusCode.OK, Json.encodeToString(elements))
         }
     }
@@ -93,7 +92,7 @@ class NewsService(
                 .find()
                 .toList()
 
-            val elements = animes.map { documentToAnimeTopEntity(it) }
+            val elements = animes.map { documentToNewsEntity(it) }
             call.respond(HttpStatusCode.OK, Json.encodeToString(elements))
         }
     }

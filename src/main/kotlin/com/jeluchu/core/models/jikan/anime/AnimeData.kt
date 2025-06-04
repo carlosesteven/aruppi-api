@@ -82,7 +82,6 @@ data class AnimeData(
 
     /**
      * Type of the anime.
-     * @see AnimeType for the detail.
      */
     @SerialName("type")
     val type: String? = "",

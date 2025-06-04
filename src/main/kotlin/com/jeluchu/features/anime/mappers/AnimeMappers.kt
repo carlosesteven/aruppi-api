@@ -227,7 +227,6 @@ fun documentToAnimeTopEntity(doc: Document) = AnimeTopEntity(
     airing = doc.getBooleanSafe("airing"),
     type = doc.getStringSafe("type"),
     subtype = doc.getStringSafe("subtype"),
-    page = doc.getIntSafe("page"),
 )
 
 fun documentToAnimeLastEpisodeEntity(doc: Document) = LastEpisodeData(
@@ -252,7 +251,6 @@ fun documentToMangaTopEntity(doc: Document) = MangaTopEntity(
     status = doc.getStringSafe("status"),
     type = doc.getStringSafe("type"),
     subtype = doc.getStringSafe("subtype"),
-    page = doc.getIntSafe("page"),
 )
 
 fun documentToPeopleTopEntity(doc: Document) = PeopleTopEntity(
@@ -262,7 +260,6 @@ fun documentToPeopleTopEntity(doc: Document) = PeopleTopEntity(
     familyName = doc.getStringSafe("familyName"),
     image = doc.getStringSafe("image"),
     birthday = doc.getStringSafe("birthday"),
-    page = doc.getIntSafe("page"),
     top = doc.getStringSafe("top"),
 )
 
@@ -272,7 +269,6 @@ fun documentToCharacterTopEntity(doc: Document) = CharacterTopEntity(
     nameKanji = doc.getStringSafe("nameKanji"),
     image = doc.getStringSafe("image"),
     top = doc.getStringSafe("top"),
-    page = doc.getIntSafe("page"),
 )
 
 fun documentToAnimeTypeEntity(doc: Document) = AnimeTypeEntity(

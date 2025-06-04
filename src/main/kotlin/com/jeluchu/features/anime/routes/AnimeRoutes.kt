@@ -11,11 +11,9 @@ fun Route.animeEndpoints(
     mongoDatabase: MongoDatabase,
     service: AnimeService = AnimeService(mongoDatabase),
     directoryService: DirectoryService = DirectoryService(mongoDatabase),
-) {
-    route(Routes.ANIME) {
-        getToJson(Routes.ID) { service.getAnimeByMalId(call) }
-        getToJson(Routes.LAST_EPISODES) { service.getLastEpisodes(call) }
-    }
+) = route(Routes.ANIME) {
+    getToJson(Routes.ID) { service.getAnimeByMalId(call) }
+    getToJson(Routes.LAST_EPISODES) { service.getLastEpisodes(call) }
 
     route(Routes.DIRECTORY) {
         getToJson { service.getDirectory(call) }

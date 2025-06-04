@@ -105,7 +105,13 @@ class RankingsService(
             call.respond(HttpStatusCode.OK, Json.encodeToString(paginationResponse))
         } else {
             val animes = animeRanking
-                .find(Filters.eq("type", type.lowercase()))
+                .find(
+                    Filters.and(
+                        Filters.eq("page", page),
+                        Filters.eq("type", type),
+                        Filters.eq("subtype", filter)
+                    )
+                )
                 .skip(skipCount)
                 .limit(size)
                 .toList()
@@ -182,7 +188,13 @@ class RankingsService(
             call.respond(HttpStatusCode.OK, Json.encodeToString(paginationResponse))
         } else {
             val mangas = mangaRanking
-                .find(Filters.eq("type", type.lowercase()))
+                .find(
+                    Filters.and(
+                        Filters.eq("page", page),
+                        Filters.eq("type", type),
+                        Filters.eq("subtype", filter)
+                    )
+                )
                 .skip(skipCount)
                 .limit(size)
                 .toList()
@@ -241,7 +253,7 @@ class RankingsService(
             call.respond(HttpStatusCode.OK, Json.encodeToString(paginationResponse))
         } else {
             val peoples = peopleRanking
-                .find()
+                .find(Filters.and(Filters.eq("page", page)))
                 .skip(skipCount)
                 .limit(size)
                 .toList()
@@ -300,7 +312,7 @@ class RankingsService(
             call.respond(HttpStatusCode.OK, Json.encodeToString(paginationResponse))
         } else {
             val characters = characterRanking
-                .find()
+                .find(Filters.and(Filters.eq("page", page)))
                 .skip(skipCount)
                 .limit(size)
                 .toList()
