@@ -20,6 +20,7 @@ repositories {
 
 dependencies {
     implementation(libs.bson)
+    implementation(libs.rssparser)
     implementation(libs.ktor.client.cio)
     implementation(libs.logback.classic)
     implementation(libs.ktor.client.core)

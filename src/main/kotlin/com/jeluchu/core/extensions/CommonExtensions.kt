@@ -1,8 +1,33 @@
 package com.jeluchu.core.extensions
 
+import io.ktor.http.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import org.bson.Document
 import java.text.SimpleDateFormat
 import java.util.*
+
+fun RoutingCall.getIntSafeQueryParam(
+    key: String,
+    defaultValue: Int = 0
+) = request.queryParameters[key]?.toIntOrNull() ?: defaultValue
+
+fun RoutingCall.getStringSafeQueryParam(
+    key: String,
+    defaultValue: String = ""
+) = request.queryParameters[key] ?: defaultValue
+
+fun RoutingCall.getStringSafeParam(
+    key: String,
+    defaultValue: String = ""
+) = parameters[key] ?: defaultValue
+
+fun RoutingCall.getIntSafeParam(
+    key: String,
+    defaultValue: Int = 0
+) = parameters[key]?.toIntOrNull() ?: defaultValue
+
+suspend fun RoutingCall.badRequestError(message: String) = respond(HttpStatusCode.BadRequest, message)
 
 fun Document.getStringSafe(key: String, defaultValue: String = ""): String {
     return try {
@@ -112,4 +137,10 @@ fun Document.getDocumentSafe(key: String): Document? {
     } catch (e: Exception) {
         null
     }
+}
+
+fun String.parseRssDate(format: String = "dd/MM/yyyy"): String {
+    val date = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US).parse(this)
+    val outputDateFormat = SimpleDateFormat(format, Locale.US)
+    return date?.let { outputDateFormat.format(it) }.orEmpty()
 }

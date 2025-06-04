@@ -2,8 +2,9 @@
 [versions]
 kotlin-version = "2.0.21"
 ktor-version = "3.0.1"
-logback-version = "1.4.14"
+logback-version = "1.5.18"
 mongo-version = "4.10.2"
+rss-version = "6.0.11"
 
 [libraries]
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor-version" }
@@ -15,6 +16,7 @@ ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negoti
 mongodb-driver-core = { module = "org.mongodb:mongodb-driver-core", version.ref = "mongo-version" }
 mongodb-driver-sync = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongo-version" }
 bson = { module = "org.mongodb:bson", version.ref = "mongo-version" }
+rssparser = { module = "com.prof18.rssparser:rssparser", version.ref = "rss-version" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor-version" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-version" }
 ktor-server-config-yaml = { module = "io.ktor:ktor-server-config-yaml-jvm", version.ref = "ktor-version" }

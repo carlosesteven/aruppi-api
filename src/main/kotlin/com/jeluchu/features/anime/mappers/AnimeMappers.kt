@@ -1,14 +1,19 @@
 package com.jeluchu.features.anime.mappers
 
+import com.jeluchu.features.themes.models.anime.AnimeThemeEntry
 import com.jeluchu.core.extensions.*
-import com.jeluchu.features.anime.models.lastepisodes.LastEpisodeData
 import com.jeluchu.features.anime.models.anime.*
 import com.jeluchu.features.anime.models.directory.AnimeTypeEntity
+import com.jeluchu.features.anime.models.lastepisodes.LastEpisodeData
 import com.jeluchu.features.rankings.models.AnimeTopEntity
 import com.jeluchu.features.rankings.models.CharacterTopEntity
 import com.jeluchu.features.rankings.models.MangaTopEntity
 import com.jeluchu.features.rankings.models.PeopleTopEntity
 import com.jeluchu.features.schedule.models.DayEntity
+import com.jeluchu.features.themes.models.anime.Anime
+import com.jeluchu.features.themes.models.anime.AnimeVideoTheme
+import com.jeluchu.features.themes.models.anime.AnimesEntity
+import com.jeluchu.features.themes.models.anime.Video
 import org.bson.Document
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -79,13 +84,6 @@ fun documentToAnimeBroadcast(doc: Document): AnimeBroadcast {
         day = doc.getStringSafe("day"),
         time = doc.getStringSafe("time"),
         timezone = doc.getStringSafe("timezone")
-    )
-}
-
-fun documentToAnimeSource(doc: Document): AnimeSource {
-    return AnimeSource(
-        id = doc.getStringSafe("id"),
-        source = doc.getStringSafe("source")
     )
 }
 
@@ -278,23 +276,69 @@ fun documentToCharacterTopEntity(doc: Document) = CharacterTopEntity(
 )
 
 fun documentToAnimeTypeEntity(doc: Document) = AnimeTypeEntity(
-    score = doc.getStringSafe("score"),
-    malId = doc.getIntSafe("malId"),
     year = doc.getIntSafe("year"),
-    season = doc.getStringSafe("season"),
+    malId = doc.getIntSafe("malId"),
     type = doc.getStringSafe("type"),
+    score = doc.getStringSafe("score"),
     title = doc.getStringSafe("title"),
     image = doc.getStringSafe("poster"),
-    episodes = doc.getListSafe<Document>("episodes").size
+    season = doc.getStringSafe("season")
 )
 
 fun documentToAnimeDirectoryEntity(doc: Document) = AnimeTypeEntity(
-    score = doc.getString("score"),
-    malId = doc.getIntSafe("malId"),
     year = doc.getIntSafe("year"),
-    season = doc.getStringSafe("season"),
+    malId = doc.getIntSafe("malId"),
     type = doc.getStringSafe("type"),
+    score = doc.getStringSafe("score"),
     title = doc.getStringSafe("title"),
     image = doc.getStringSafe("image"),
-    episodes = doc.getListSafe<Document>("episodes").size
+    season = doc.getStringSafe("season")
+)
+
+
+fun documentToAnimesEntity(doc: Document) = AnimesEntity(
+    year = doc.getIntSafe("year"),
+    slug = doc.getStringSafe("slug"),
+    name = doc.getStringSafe("name"),
+    image = doc.getStringSafe("image"),
+    season = doc.getStringSafe("season")
+)
+
+fun documentToAnimesThemeEntity(doc: Document) = Anime(
+    year = doc.getIntSafe("year"),
+    slug = doc.getStringSafe("slug"),
+    name = doc.getStringSafe("name"),
+    image = doc.getStringSafe("image"),
+    season = doc.getStringSafe("season"),
+    themes = doc.getListSafe<Document>("themes").map { documentToAnimeVideoTheme(it) }
+)
+
+fun documentToAnimeVideoTheme(doc: Document) = AnimeVideoTheme(
+    id = doc.getIntSafe("id"),
+    slug = doc.getStringSafe("slug"),
+    type = doc.getStringSafe("type"),
+    sequence = doc.getIntSafe("sequence"),
+    entries = doc.getListSafe<Document>("animethemeentries").map { documentToAnimeThemeEntry(it) }
+)
+
+fun documentToAnimeThemeEntry(doc: Document) = AnimeThemeEntry(
+    id = doc.getIntSafe("id"),
+    nsfw = doc.getBooleanSafe("nsfw"),
+    notes = doc.getStringSafe("notes"),
+    spoiler = doc.getBooleanSafe("spoiler"),
+    episodes = doc.getStringSafe("episodes"),
+    videos = doc.getListSafe<Document>("videos").map { documentToVideo(it) }
+)
+
+fun documentToVideo(doc: Document) = Video(
+    nc = doc.getBooleanSafe("nc"),
+    size = doc.getIntSafe("size"),
+    link = doc.getStringSafe("link"),
+    uncen = doc.getBooleanSafe("uncen"),
+    source = doc.getStringSafe("source"),
+    subbed = doc.getBooleanSafe("subbed"),
+    lyrics = doc.getBooleanSafe("lyrics"),
+    overlap = doc.getStringSafe("overlap"),
+    filename = doc.getStringSafe("filename"),
+    resolution = doc.getIntSafe("resolution")
 )
