@@ -36,7 +36,6 @@ fun documentToMoreInfoEntity(doc: Document): MoreInfoEntity {
         type = doc.getStringSafe("type"),
         url = doc.getStringSafe("url"),
         promo = doc.getDocumentSafe("promo")?.let { documentToVideoPromo(it) } ?: VideoPromo(),
-        source = doc.getStringSafe("source"),
         duration = doc.getStringSafe("duration"),
         rank = doc.getIntSafe("rank", 0),
         titles = doc.getListSafe<Document>("titles").map { documentToAlternativeTitles(it) },
