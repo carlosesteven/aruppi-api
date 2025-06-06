@@ -22,7 +22,7 @@ data class MoreInfoEntity(
     var status: String = "",
     var type: String = "",
     val url: String = "",
-    val promo: VideoPromo = VideoPromo(),
+    val promo: VideoPromo? = VideoPromo(),
     val duration: String = "",
     val rank: Int = 0,
     val titles: List<AlternativeTitles> = emptyList(),

@@ -4,6 +4,7 @@ import com.jeluchu.core.enums.*
 
 sealed class ErrorMessages(val message: String) {
     data object NotFound : ErrorMessages("Nyaaaaaaaan! This request has not been found by our alpaca-neko")
+    data object NotFoundContent : ErrorMessages("No related content found")
     data object AnimeNotFound : ErrorMessages("This malId is not in our database")
     data object InvalidMalId : ErrorMessages("The provided id of malId is invalid")
     data object InvalidDay : ErrorMessages("Invalid 'day' parameter. Valid values are: ${Day.entries.joinToString(", ") { it.name.lowercase() }}")

@@ -3,9 +3,13 @@ package com.jeluchu.core.utils
 object BaseUrls {
     const val JIKAN = "https://api.jikan.moe/v4/"
     const val ANIME_THEMES = "https://api.animethemes.moe/"
+    const val ANIME_PICTURES = "https://api.anime-pictures.net/api/v3/"
 }
 
 object RssUrls {
+    // Anitakume Podcast
+    const val ANITAKUME = "https://www.ivoox.com/feed_fg_f1660716_filtro_1.xml"
+
     // Spanish news
     const val SOMOSKUDASAI = "https://somoskudasai.com/feed/"
     const val MANGALATAM = "https://www.mangalatam.com/feeds/posts/default?alt=rss"
@@ -33,6 +37,7 @@ object RssSources {
 }
 
 object Endpoints {
+    const val POSTS = "posts"
     const val ANIME = "anime"
     const val SCHEDULES = "schedules"
     const val TOP_ANIME = "top/anime"
@@ -50,8 +55,12 @@ object Routes {
     const val ANIME = "/anime"
     const val MANGA = "/manga"
     const val PEOPLE = "/people"
+    const val SEARCH = "/search"
+    const val GALLERY = "/gallery"
     const val SCHEDULE = "/schedule"
+    const val LAST_POST = "/lastPosts"
     const val DIRECTORY = "/directory"
+    const val ANITAKUME = "/anitakume"
     const val CHARACTER = "/characters"
     const val LAST_EPISODES = "/lastEpisodes"
     const val ID = "/{id}"
@@ -75,6 +84,7 @@ object Collections {
     const val NEWS_ES = "news_es"
     const val NEWS_EN = "news_en"
     const val SCHEDULES = "schedule"
+    const val ANITAKUME = "anitakume"
     const val ANIME_THEMES = "anime_themes"
     const val ARTISTS_INDEX = "artists_index"
     const val ANIME_DETAILS = "anime_details"
@@ -83,4 +93,6 @@ object Collections {
     const val MANGA_RANKING = "manga_ranking"
     const val PEOPLE_RANKING = "people_ranking"
     const val CHARACTER_RANKING = "character_ranking"
+    const val ANIME_PICTURES_QUERY = "anime_pictures_query"
+    const val ANIME_PICTURES_RECENT = "anime_pictures_recent"
 }
