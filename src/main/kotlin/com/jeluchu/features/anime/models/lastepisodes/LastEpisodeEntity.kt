@@ -4,7 +4,7 @@ import com.jeluchu.core.models.jikan.anime.AnimeData
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class LastEpisodeData(
+data class LastEpisodeEntity(
     val malId: Int = 0,
     val title: String?,
     val score: String?,
@@ -14,7 +14,7 @@ data class LastEpisodeData(
     val timezone: String?,
 ) {
     companion object {
-        fun AnimeData.toLastEpisodeData() = LastEpisodeData(
+        fun AnimeData.toLastEpisodeData() = LastEpisodeEntity(
             malId = malId ?: 0,
             day = broadcast?.day.orEmpty(),
             time = broadcast?.time.orEmpty(),

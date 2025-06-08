@@ -8,7 +8,6 @@ import com.jeluchu.core.models.PaginationResponse
 import com.jeluchu.core.utils.Collections
 import com.jeluchu.core.utils.TimerKey
 import com.jeluchu.features.anime.mappers.documentToAnimeDirectoryEntity
-import com.jeluchu.features.anime.mappers.documentToAnimeTypeEntity
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Filters
@@ -23,7 +22,7 @@ import org.bson.conversions.Bson
 class DirectoryService(
     private val database: MongoDatabase,
     private val timers: MongoCollection<Document> = database.getCollection(Collections.TIMERS),
-    private val directory: MongoCollection<Document> = database.getCollection(Collections.ANIME_DETAILS)
+    private val directory: MongoCollection<Document> = database.getCollection(Collections.ANIME_DIRECTORY)
 ) {
     suspend fun getAnimeByType(call: RoutingCall) {
         val param = call.getStringSafeParam("type").uppercase()

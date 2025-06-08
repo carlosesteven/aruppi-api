@@ -5,7 +5,6 @@ import com.jeluchu.core.extensions.getIntSafeQueryParam
 import com.jeluchu.core.messages.ErrorMessages
 import com.jeluchu.core.models.PaginationResponse
 import com.jeluchu.core.utils.Collections
-import com.jeluchu.features.anime.mappers.documentToAnimesEntity
 import com.jeluchu.features.anime.mappers.documentToAnimesThemeEntity
 import com.mongodb.client.MongoDatabase
 import io.ktor.http.*

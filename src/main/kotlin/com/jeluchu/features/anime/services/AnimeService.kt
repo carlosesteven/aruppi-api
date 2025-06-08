@@ -8,8 +8,8 @@ import com.jeluchu.core.extensions.update
 import com.jeluchu.core.messages.ErrorMessages
 import com.jeluchu.core.models.ErrorResponse
 import com.jeluchu.core.models.PaginationResponse
-import com.jeluchu.features.anime.models.lastepisodes.LastEpisodeData
-import com.jeluchu.features.anime.models.lastepisodes.LastEpisodeData.Companion.toLastEpisodeData
+import com.jeluchu.features.anime.models.lastepisodes.LastEpisodeEntity
+import com.jeluchu.features.anime.models.lastepisodes.LastEpisodeEntity.Companion.toLastEpisodeData
 import com.jeluchu.core.models.jikan.search.AnimeSearch
 import com.jeluchu.core.utils.BaseUrls
 import com.jeluchu.core.utils.Collections
@@ -35,8 +35,7 @@ class AnimeService(
     private val database: MongoDatabase
 ) {
     private val timers = database.getCollection(Collections.TIMERS)
-    private val directoryCollection = database.getCollection(Collections.ANIME_DETAILS)
-    private val lastEpisodesCollection = database.getCollection(Collections.LAST_EPISODES)
+    private val directoryCollection = database.getCollection(Collections.ANIME_DIRECTORY)
 
     suspend fun getDirectory(call: RoutingCall) = try {
         val type = call.request.queryParameters["type"].orEmpty()
@@ -116,7 +115,7 @@ class AnimeService(
                 AnimeSearch.serializer()
             )
 
-            val animes = mutableListOf<LastEpisodeData>()
+            val animes = mutableListOf<LastEpisodeEntity>()
             val totalPage = response.pagination?.lastPage ?: 0
             response.data?.map { it.toLastEpisodeData() }.orEmpty().let { animes.addAll(it) }
 
@@ -130,7 +129,7 @@ class AnimeService(
                 delay(1000)
             }
 
-            val documentsToInsert = parseDataToDocuments(animes, LastEpisodeData.serializer())
+            val documentsToInsert = parseDataToDocuments(animes, LastEpisodeEntity.serializer())
             if (documentsToInsert.isNotEmpty()) collection.insertMany(documentsToInsert)
             timers.update(timerKey)
 

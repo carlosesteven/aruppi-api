@@ -39,6 +39,7 @@ object RssSources {
 object Endpoints {
     const val POSTS = "posts"
     const val ANIME = "anime"
+    const val EPISODES = "episodes"
     const val SCHEDULES = "schedules"
     const val TOP_ANIME = "top/anime"
     const val TOP_MANGA = "top/manga"
@@ -63,6 +64,7 @@ object Routes {
     const val ANITAKUME = "/anitakume"
     const val CHARACTER = "/characters"
     const val LAST_EPISODES = "/lastEpisodes"
+    const val EPISODES = "/episodes"
     const val ID = "/{id}"
     const val TYPE = "/{type}"
     const val SEASON = "/{year}/{season}"
@@ -76,6 +78,7 @@ object TimerKey {
     const val LAST_UPDATED = "lastUpdated"
     const val ANIME_TYPE = "anime_"
     const val THEMES = "themes_"
+    const val EPISODES = "episodes_"
     const val LAST_EPISODES = "last_episodes"
 }
 
@@ -87,11 +90,11 @@ object Collections {
     const val ANITAKUME = "anitakume"
     const val ANIME_THEMES = "anime_themes"
     const val ARTISTS_INDEX = "artists_index"
-    const val ANIME_DETAILS = "anime_details"
     const val LAST_EPISODES = "last_episodes"
     const val ANIME_RANKING = "anime_ranking"
     const val MANGA_RANKING = "manga_ranking"
     const val PEOPLE_RANKING = "people_ranking"
+    const val ANIME_DIRECTORY = "anime_directory"
     const val CHARACTER_RANKING = "character_ranking"
     const val ANIME_PICTURES_QUERY = "anime_pictures_query"
     const val ANIME_PICTURES_RECENT = "anime_pictures_recent"

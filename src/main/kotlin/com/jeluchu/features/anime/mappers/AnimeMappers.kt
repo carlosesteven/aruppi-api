@@ -1,96 +1,104 @@
 package com.jeluchu.features.anime.mappers
 
-import com.jeluchu.features.themes.models.anime.AnimeThemeEntry
 import com.jeluchu.core.extensions.*
 import com.jeluchu.features.anime.models.anime.*
 import com.jeluchu.features.anime.models.directory.AnimeTypeEntity
-import com.jeluchu.features.anime.models.lastepisodes.LastEpisodeData
+import com.jeluchu.features.anime.models.lastepisodes.LastEpisodeEntity
 import com.jeluchu.features.rankings.models.AnimeTopEntity
 import com.jeluchu.features.rankings.models.CharacterTopEntity
 import com.jeluchu.features.rankings.models.MangaTopEntity
 import com.jeluchu.features.rankings.models.PeopleTopEntity
 import com.jeluchu.features.schedule.models.DayEntity
-import com.jeluchu.features.themes.models.anime.Anime
-import com.jeluchu.features.themes.models.anime.AnimeVideoTheme
-import com.jeluchu.features.themes.models.anime.AnimesEntity
-import com.jeluchu.features.themes.models.anime.Video
+import com.jeluchu.features.themes.models.anime.*
 import org.bson.Document
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 fun documentToMoreInfoEntity(doc: Document): MoreInfoEntity {
     return MoreInfoEntity(
         id = doc.getObjectId("_id").toString(),
         malId = doc.getIntSafe("malId"),
+        rank = doc.getIntSafe("rank"),
         title = doc.getStringSafe("title"),
+        episodes = doc.getIntSafe("episodes"),
+        episodeList = doc.getListSafe<Document>("episodeList").map { documentToEpisodeInfo(it) },
+        type = doc.getStringSafe("type"),
+        status = doc.getStringSafe("status"),
+        season = doc.getDocumentSafe("season")?.let { documentToSeasonalEntity(it) },
         poster = doc.getStringSafe("poster"),
         cover = doc.getStringSafe("cover"),
-        genres = doc.getListSafe<String>("genres"),
-        synopsis = doc.getStringSafe("synopsis"),
-        episodes = doc.getListSafe<Document>("episodes").map { documentToMergedEpisode(it) },
-        episodesCount = doc.getIntSafe("episodesCount", 0),
+        duration = doc.getDocumentSafe("duration")?.let { documentToEpisodeDurationEntity(it) },
         score = doc.getStringSafe("score"),
+        titles = doc.getDocumentSafe("titles")?.let { documentToOtherTitlesEntity(it) },
+        studios = doc.getListSafe<Document>("studios").map { documentToCompanies(it) },
+        producers = doc.getListSafe<Document>("producers").map { documentToCompanies(it) },
+        licensors = doc.getListSafe<Document>("licensors").map { documentToCompanies(it) },
+        relations = doc.getListSafe<Document>("relations").map { documentToRelated(it) },
+        promo = doc.getDocumentSafe("promo")?.let { documentToVideoPromo(it) },
+        tags = doc.getDocumentSafe("genres")?.let { documentToMultipleLanguageLists(it) },
+        synopsis = doc.getDocumentSafe("synopsis")?.let { documentToMultipleLanguage(it) },
         staff = doc.getListSafe<Document>("staff").map { documentToStaff(it) },
         characters = doc.getListSafe<Document>("characters").map { documentToCharacter(it) },
-        status = doc.getStringSafe("status"),
-        type = doc.getStringSafe("type"),
-        url = doc.getStringSafe("url"),
-        promo = doc.getDocumentSafe("promo")?.let { documentToVideoPromo(it) },
-        duration = doc.getStringSafe("duration"),
-        rank = doc.getIntSafe("rank", 0),
-        titles = doc.getListSafe<Document>("titles").map { documentToAlternativeTitles(it) },
-        airing = doc.getBooleanSafe("airing"),
-        aired = doc.getDocumentSafe("aired")?.let { documentToAiringTime(it) } ?: AiringTime(),
-        broadcast = doc.getDocumentSafe("broadcast")?.let { documentToAnimeBroadcast(it) } ?: AnimeBroadcast(),
-        season = doc.getStringSafe("season"),
-        year = doc.getIntSafe("year", 0),
-        external = doc.getListSafe<Document>("external").map { documentToExternalLinks(it) },
         streaming = doc.getListSafe<Document>("streaming").map { documentToExternalLinks(it) },
-        studios = doc.getListSafe<Document>("studios").map { documentToCompanies(it) },
-        licensors = doc.getListSafe<Document>("licensors").map { documentToCompanies(it) },
-        producers = doc.getListSafe<Document>("producers").map { documentToCompanies(it) },
-        theme = doc.getDocumentSafe("theme")?.let { documentToThemes(it) } ?: Themes(),
-        relations = doc.getListSafe<Document>("relations").map { documentToRelated(it) },
-        stats = doc.getDocumentSafe("stats")?.let { documentToStatistics(it) } ?: Statistics(),
-        gallery = doc.getListSafe<Document>("gallery").map { documentToImageMediaEntity(it) },
-        episodeSource = doc.getStringSafe("episodeSource")
+        urls = doc.getListSafe<String>("urls").takeIf { it.isNotEmpty() } ?: listOf(doc.getStringSafe("url")).filter { it.isNotEmpty() },
+        broadcast = doc.getDocumentSafe("broadcast")?.let { documentToAnimeBroadcast(it) },
+        external = doc.getListSafe<Document>("external").map { documentToExternalLinks(it) },
+        stats = doc.getDocumentSafe("stats")?.let { documentToStatistics(it) },
+        nsfw = doc.getBooleanSafe("nsfw", false),
+        ageRating = doc.getStringSafe("ageRating"),
+        aired = doc.getDocumentSafe("aired")?.let { documentToAiringTime(it) },
+        themes = doc.getDocumentSafe("theme")?.let { documentToThemes(it) }
     )
 }
 
-fun documentToActor(doc: Document): Actor {
-    return Actor(
-        person = doc.getDocumentSafe("person")?.let { documentToIndividual(it) } ?: Individual(),
-        language = doc.getStringSafe("language")
+fun documentToEpisodeInfo(doc: Document): EpisodeInfo {
+    return EpisodeInfo(
+        number = doc.getIntSafe("number"),
+        seasonNumber = doc.getIntSafe("season_number"),
+        relativeNumber = doc.getIntSafe("relative_number"),
+        airdate = doc.getStringSafe("airdate"),
+        duration = doc.getIntSafe("duration"),
+        thumbnail = doc.getStringSafe("thumbnail"),
+        synopsis = doc.getDocumentSafe("synopsis")?.let { documentToMultipleLanguage(it) },
+        titles = doc.getDocumentSafe("titles")?.let { documentToMultipleLanguageTitles(it) },
+        score = doc.getDoubleSafe("score"),
+        filler = doc.getBooleanSafe("filler", false),
+        recap = doc.getBooleanSafe("recap", false)
     )
 }
 
-fun documentToAiringTime(doc: Document): AiringTime {
-    return AiringTime(
-        from = doc.getStringSafe("from"),
-        to = doc.getStringSafe("to")
+fun documentToMultipleLanguage(doc: Document): MultipleLanguage {
+    return MultipleLanguage(
+        es = doc.getStringSafe("es"),
+        en = doc.getStringSafe("en")
     )
 }
 
-fun documentToAlternativeTitles(doc: Document): AlternativeTitles {
-    return AlternativeTitles(
-        title = doc.getStringSafe("title"),
-        type = doc.getStringSafe("type")
+fun documentToMultipleLanguageTitles(doc: Document): MultipleLanguageTitles {
+    return MultipleLanguageTitles(
+        es = doc.getStringSafe("es"),
+        en = doc.getStringSafe("en"),
+        jp = doc.getStringSafe("jp"),
+        romaji_jp = doc.getStringSafe("romaji_jp")
     )
 }
 
-fun documentToAnimeBroadcast(doc: Document): AnimeBroadcast {
-    return AnimeBroadcast(
-        day = doc.getStringSafe("day"),
-        time = doc.getStringSafe("time"),
-        timezone = doc.getStringSafe("timezone")
+fun documentToSeasonalEntity(doc: Document): SeasonalEntity {
+    return SeasonalEntity(
+        station = doc.getStringSafe("station"),
+        year = doc.getIntSafe("year")
     )
 }
 
-fun documentToCharacter(doc: Document): Character {
-    return Character(
-        character = doc.getDocumentSafe("character")?.let { documentToIndividual(it) } ?: Individual(),
-        role = doc.getStringSafe("role"),
-        voiceActor = doc.getListSafe<Document>("voiceActor").map { documentToActor(it) }
+fun documentToEpisodeDurationEntity(doc: Document): EpisodeDurationEntity {
+    return EpisodeDurationEntity(
+        unit = doc.getStringSafe("unit"),
+        value = doc.getIntSafe("value")
+    )
+}
+
+fun documentToOtherTitlesEntity(doc: Document): OtherTitlesEntity {
+    return OtherTitlesEntity(
+        synonyms = doc.getListSafe<String>("synonyms"),
+        abbreviatedTitles = doc.getListSafe<String>("abbreviated_titles")
     )
 }
 
@@ -103,20 +111,19 @@ fun documentToCompanies(doc: Document): Companies {
     )
 }
 
-fun documentToExternalLinks(doc: Document): ExternalLinks {
-    return ExternalLinks(
-        url = doc.getStringSafe("url"),
-        name = doc.getStringSafe("name")
+fun documentToRelated(doc: Document): Related {
+    return Related(
+        entry = doc.getListSafe<Document>("entry").map { documentToCompanies(it) },
+        relation = doc.getStringSafe("relation")
     )
 }
 
-fun documentToImageMediaEntity(doc: Document): ImageMediaEntity {
-    return ImageMediaEntity(
-        media = doc.getStringSafe("media"),
-        thumbnail = doc.getStringSafe("thumbnail"),
-        width = doc.getIntSafe("width", 0),
-        height = doc.getIntSafe("height", 0),
-        url = doc.getStringSafe("url")
+fun documentToVideoPromo(doc: Document): VideoPromo {
+    return VideoPromo(
+        embedUrl = doc.getStringSafe("embedUrl"),
+        url = doc.getStringSafe("url"),
+        youtubeId = doc.getStringSafe("youtubeId"),
+        images = doc.getDocumentSafe("images")?.let { documentToImages(it) } ?: Images()
     )
 }
 
@@ -130,6 +137,38 @@ fun documentToImages(doc: Document): Images {
     )
 }
 
+fun documentToMultipleLanguageLists(doc: Document): MultipleLanguageLists {
+    return MultipleLanguageLists(
+        es = doc.getListSafe<String>("es"),
+        en = doc.getListSafe<String>("en")
+    )
+}
+
+fun documentToStaff(doc: Document): Staff {
+    return Staff(
+        person = doc.getDocumentSafe("person")?.let { documentToIndividual(it) } ?: Individual(),
+        positions = doc.getListSafe<String>("positions")
+    )
+}
+
+fun documentToCharacter(doc: Document): Character {
+    return Character(
+        malId = doc.getIntSafe("mal_id", 0),
+        url = doc.getStringSafe("url"),
+        name = doc.getStringSafe("name"),
+        images = doc.getStringSafe("images"),
+        role = doc.getStringSafe("role"),
+        voiceActor = doc.getListSafe<Document>("voice_actor").map { documentToActor(it) }
+    )
+}
+
+fun documentToActor(doc: Document): Actor {
+    return Actor(
+        person = doc.getDocumentSafe("person")?.let { documentToIndividual(it) } ?: Individual(),
+        language = doc.getStringSafe("language")
+    )
+}
+
 fun documentToIndividual(doc: Document): Individual {
     return Individual(
         malId = doc.getIntSafe("malId", 0),
@@ -139,42 +178,10 @@ fun documentToIndividual(doc: Document): Individual {
     )
 }
 
-fun documentToMergedEpisode(doc: Document): MergedEpisode {
-    return MergedEpisode(
-        malId = doc.getIntSafe("malId"),
-        title = doc.getStringSafe("title"),
-        titleJapanese = doc.getStringSafe("titleJapanese"),
-        titleRomanji = doc.getStringSafe("titleRomanji"),
-        aired = doc.getStringSafe("aired", ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)),
-        score = doc.getFloatSafe("score"),
-        filler = doc.getBooleanSafe("filler"),
-        recap = doc.getBooleanSafe("recap")
-    )
-}
-
-fun documentToRelated(doc: Document): Related {
-    return Related(
-        entry = doc.getListSafe<Document>("entry").map { documentToCompanies(it) },
-        relation = doc.getStringSafe("relation")
-    )
-}
-
-fun documentToScore(doc: Document): Score {
-    return Score(
-        percentage = when (val value = doc["percentage"]) {
-            is Double -> value
-            is Int -> value.toDouble()
-            else -> 0.0
-        },
-        score = doc.getIntSafe("score", 0),
-        votes = doc.getIntSafe("votes", 0)
-    )
-}
-
-fun documentToStaff(doc: Document): Staff {
-    return Staff(
-        person = doc.get("person", Document::class.java)?.let { documentToIndividual(it) } ?: Individual(),
-        positions = doc.getListSafe<String>("positions")
+fun documentToExternalLinks(doc: Document): ExternalLinks {
+    return ExternalLinks(
+        url = doc.getStringSafe("url"),
+        name = doc.getStringSafe("name")
     )
 }
 
@@ -190,19 +197,37 @@ fun documentToStatistics(doc: Document): Statistics {
     )
 }
 
-fun documentToThemes(doc: Document): Themes {
-    return Themes(
-        endings = doc.getListSafe<String>("endings"),
-        openings = doc.getListSafe<String>("openings")
+fun documentToAiringTime(doc: Document): AiringTime {
+    return AiringTime(
+        from = doc.getStringSafe("from"),
+        to = doc.getStringSafe("to")
     )
 }
 
-fun documentToVideoPromo(doc: Document): VideoPromo {
-    return VideoPromo(
-        embedUrl = doc.getStringSafe("embedUrl"),
-        url = doc.getStringSafe("url"),
-        youtubeId = doc.getStringSafe("youtubeId"),
-        images = doc.get("images", Document::class.java)?.let { documentToImages(it) } ?: Images()
+fun documentToThemes(doc: Document): Themes {
+    return Themes(
+        openings = doc.getListSafe<String>("openings"),
+        endings = doc.getListSafe<String>("endings")
+    )
+}
+
+fun documentToAnimeBroadcast(doc: Document): AnimeBroadcast {
+    return AnimeBroadcast(
+        day = doc.getStringSafe("day"),
+        time = doc.getStringSafe("time"),
+        timezone = doc.getStringSafe("timezone")
+    )
+}
+
+fun documentToScore(doc: Document): Score {
+    return Score(
+        percentage = when (val value = doc["percentage"]) {
+            is Double -> value
+            is Int -> value.toDouble()
+            else -> 0.0
+        },
+        score = doc.getIntSafe("score", 0),
+        votes = doc.getIntSafe("votes", 0)
     )
 }
 
@@ -228,7 +253,7 @@ fun documentToAnimeTopEntity(doc: Document) = AnimeTopEntity(
     subtype = doc.getStringSafe("subtype"),
 )
 
-fun documentToAnimeLastEpisodeEntity(doc: Document) = LastEpisodeData(
+fun documentToAnimeLastEpisodeEntity(doc: Document) = LastEpisodeEntity(
     malId = doc.getIntSafe("malId"),
     title = doc.getStringSafe("title"),
     image = doc.getStringSafe("image"),
@@ -286,15 +311,6 @@ fun documentToAnimeDirectoryEntity(doc: Document) = AnimeTypeEntity(
     type = doc.getStringSafe("type"),
     score = doc.getStringSafe("score"),
     title = doc.getStringSafe("title"),
-    image = doc.getStringSafe("image"),
-    season = doc.getStringSafe("season")
-)
-
-
-fun documentToAnimesEntity(doc: Document) = AnimesEntity(
-    year = doc.getIntSafe("year"),
-    slug = doc.getStringSafe("slug"),
-    name = doc.getStringSafe("name"),
     image = doc.getStringSafe("image"),
     season = doc.getStringSafe("season")
 )
