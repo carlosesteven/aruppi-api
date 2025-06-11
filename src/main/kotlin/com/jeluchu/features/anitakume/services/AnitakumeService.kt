@@ -53,7 +53,7 @@ class AnitakumeService(
                 .find()
                 .toList()
 
-            val elements = animes.map { documentToNewsEntity(it) }
+            val elements = animes.map { documentToAnitakumeEntity(it) }
             call.respond(HttpStatusCode.OK, Json.encodeToString(elements))
         }
     }
