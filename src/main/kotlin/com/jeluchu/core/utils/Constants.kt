@@ -59,6 +59,7 @@ object Routes {
     const val SEARCH = "/search"
     const val GALLERY = "/gallery"
     const val SCHEDULE = "/schedule"
+    const val RADIO_STATIONS = "/radio"
     const val LAST_POST = "/lastPosts"
     const val DIRECTORY = "/directory"
     const val ANITAKUME = "/anitakume"
@@ -75,6 +76,7 @@ object Routes {
 object TimerKey {
     const val KEY = "key"
     const val SCHEDULE = "schedule"
+    const val RADIO = "radio_station"
     const val LAST_UPDATED = "lastUpdated"
     const val ANIME_TYPE = "anime_"
     const val THEMES = "themes_"
@@ -88,6 +90,7 @@ object Collections {
     const val NEWS_EN = "news_en"
     const val SCHEDULES = "schedule"
     const val ANITAKUME = "anitakume"
+    const val RADIO = "radio_stations"
     const val ANIME_THEMES = "anime_themes"
     const val ARTISTS_INDEX = "artists_index"
     const val LAST_EPISODES = "last_episodes"

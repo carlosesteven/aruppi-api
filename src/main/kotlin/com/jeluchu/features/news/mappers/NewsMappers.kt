@@ -1,14 +1,8 @@
 package com.jeluchu.features.news.mappers
 
-import com.jeluchu.core.extensions.getBooleanSafe
-import com.jeluchu.core.extensions.getDocumentSafe
-import com.jeluchu.core.extensions.getFloatSafe
-import com.jeluchu.core.extensions.getIntSafe
 import com.jeluchu.core.extensions.getListSafe
 import com.jeluchu.core.extensions.getStringSafe
 import com.jeluchu.core.extensions.parseRssDate
-import com.jeluchu.features.anime.mappers.documentToVideoPromo
-import com.jeluchu.features.anime.models.anime.VideoPromo
 import com.jeluchu.features.news.models.NewEntity
 import com.prof18.rssparser.model.RssChannel
 import org.bson.Document
