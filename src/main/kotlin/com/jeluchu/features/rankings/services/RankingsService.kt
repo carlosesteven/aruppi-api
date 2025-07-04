@@ -43,6 +43,7 @@ class RankingsService(
     private val mangaRanking = database.getCollection(Collections.MANGA_RANKING)
     private val peopleRanking = database.getCollection(Collections.PEOPLE_RANKING)
     private val characterRanking = database.getCollection(Collections.CHARACTER_RANKING)
+    private val animeRankingTopTen = database.getCollection(Collections.ANIME_RANKING_TOP_TEN)
 
     suspend fun getAnimeRanking(call: RoutingCall) {
         val filter = call.request.queryParameters["filter"] ?: "airing"
@@ -325,6 +326,67 @@ class RankingsService(
             )
 
             call.respond(HttpStatusCode.OK, Json.encodeToString(response))
+        }
+    }
+
+    suspend fun getAnimeTopTenRanking(call: RoutingCall) {
+        val filter = call.request.queryParameters["filter"] ?: "airing"
+        val type = call.parameters["type"] ?: throw IllegalArgumentException(ErrorMessages.InvalidTopAnimeType.message)
+
+        if (parseAnimeType(type) == null) call.respond(HttpStatusCode.BadRequest, ErrorResponse(ErrorMessages.InvalidTopAnimeType.message))
+
+        val timerKey = "${Collections.ANIME_RANKING}_${Collections.TOP_TEN}_${type}_${filter}"
+
+        val needsUpdate = timers.needsUpdate(
+            amount = 7,
+            key = timerKey,
+            unit = TimeUnit.DAY
+        )
+
+        if (needsUpdate) {
+            animeRankingTopTen.deleteMany(
+                Filters.and(
+                    Filters.eq("type", type),
+                    Filters.eq("subtype", filter)
+                )
+            )
+
+            val params = mutableListOf<String>()
+            params.add("type=$type")
+            params.add("filter=$filter")
+
+            val response = RestClient.request(
+                BaseUrls.JIKAN + Endpoints.TOP_ANIME + "?${params.joinToString("&")}",
+                AnimeSearch.serializer()
+            ).data?.map { anime ->
+                anime.toAnimeTopEntity(
+                    page = 0,
+                    top = "anime",
+                    type = type,
+                    subType = filter
+                )
+            }.orEmpty().take(11).distinctBy { it.malId }
+
+            val documentsToInsert = parseDataToDocuments(response, AnimeTopEntity.serializer())
+            if (documentsToInsert.isNotEmpty()) animeRankingTopTen .insertMany(documentsToInsert)
+            timers.update(timerKey)
+
+            val elements = documentsToInsert.map { documentToAnimeTopEntity(it) }
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(elements))
+        } else {
+            val animes = animeRankingTopTen
+                .find(
+                    Filters.and(
+                        Filters.eq("type", type),
+                        Filters.eq("subtype", filter)
+                    )
+                )
+                .toList()
+
+            val elements = animes.map { documentToAnimeTopEntity(it) }
+
+            call.respond(HttpStatusCode.OK, Json.encodeToString(elements))
         }
     }
 }

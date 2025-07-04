@@ -57,6 +57,7 @@ object Routes {
     const val MANGA = "/manga"
     const val PEOPLE = "/people"
     const val SEARCH = "/search"
+    const val TOP_TEN = "/topTen"
     const val GALLERY = "/gallery"
     const val SCHEDULE = "/schedule"
     const val RADIO_STATIONS = "/radio"
@@ -86,6 +87,7 @@ object TimerKey {
 
 object Collections {
     const val TIMERS = "timers"
+    const val TOP_TEN = "top_ten"
     const val NEWS_ES = "news_es"
     const val NEWS_EN = "news_en"
     const val SCHEDULES = "schedule"
@@ -100,5 +102,6 @@ object Collections {
     const val ANIME_DIRECTORY = "anime_directory"
     const val CHARACTER_RANKING = "character_ranking"
     const val ANIME_PICTURES_QUERY = "anime_pictures_query"
+    const val ANIME_RANKING_TOP_TEN = "anime_ranking_top_ten"
     const val ANIME_PICTURES_RECENT = "anime_pictures_recent"
 }

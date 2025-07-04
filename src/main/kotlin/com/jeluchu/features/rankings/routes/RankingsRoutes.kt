@@ -12,6 +12,10 @@ fun Route.rankingsEndpoints(
 ) = route(Routes.TOP) {
     route(Routes.ANIME) {
         getToJson { service.getAnimeRanking(call) }
+
+        route(Routes.TOP_TEN) {
+            getToJson { service.getAnimeTopTenRanking(call) }
+        }
     }
     route(Routes.MANGA) {
         getToJson { service.getMangaRanking(call) }
