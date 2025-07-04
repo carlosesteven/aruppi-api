@@ -11,6 +11,7 @@ import com.jeluchu.core.models.ErrorResponse
 import com.jeluchu.core.models.jikan.anime.AnimeData.Companion.toDayEntity
 import com.jeluchu.core.utils.*
 import com.jeluchu.features.anime.mappers.documentToScheduleDayEntity
+import com.jeluchu.features.schedule.models.DayEntity
 import com.jeluchu.features.schedule.models.ScheduleData
 import com.jeluchu.features.schedule.models.ScheduleEntity
 import com.mongodb.client.MongoDatabase
@@ -37,22 +38,20 @@ class ScheduleService(
 
         if (needsUpdate) {
             schedules.deleteMany(Document())
+            val documents = mutableListOf<Document>()
 
-            val response = ScheduleData(
-                sunday = getSchedule(Day.SUNDAY).data?.map { it.toDayEntity(Day.SUNDAY) }.orEmpty(),
-                friday = getSchedule(Day.FRIDAY).data?.map { it.toDayEntity(Day.FRIDAY) }.orEmpty(),
-                monday = getSchedule(Day.MONDAY).data?.map { it.toDayEntity(Day.MONDAY) }.orEmpty(),
-                tuesday = getSchedule(Day.TUESDAY).data?.map { it.toDayEntity(Day.TUESDAY) }.orEmpty(),
-                thursday = getSchedule(Day.THURSDAY).data?.map { it.toDayEntity(Day.THURSDAY) }.orEmpty(),
-                saturday = getSchedule(Day.SATURDAY).data?.map { it.toDayEntity(Day.SATURDAY) }.orEmpty(),
-                wednesday = getSchedule(Day.WEDNESDAY).data?.map { it.toDayEntity(Day.WEDNESDAY) }.orEmpty()
-            )
+            Day.entries.forEach { day ->
+                val animes = getSchedule(day).data?.map { it.toDayEntity(day) }.orEmpty()
+                val documentsToInsert = parseDataToDocuments(animes, DayEntity.serializer())
+                if (documentsToInsert.isNotEmpty()) {
+                    documents.addAll(documentsToInsert)
+                    schedules.insertMany(documentsToInsert)
+                }
+            }
 
-            val elements = parseTopDataToDocuments(response)
-            if (elements.isNotEmpty()) schedules.insertMany(elements)
             timers.update(TimerKey.SCHEDULE)
 
-            call.respond(HttpStatusCode.OK, elements.documentWeekMapper())
+            call.respond(HttpStatusCode.OK, documents.documentWeekMapper())
         } else {
             val elements = schedules.find().toList()
             call.respond(HttpStatusCode.OK, elements.documentWeekMapper())
@@ -78,7 +77,16 @@ class ScheduleService(
     )
 
     private fun List<Document>.documentWeekMapper(): String {
-        val directory = map { documentToScheduleDayEntity(it) }
-        return Json.encodeToString(directory)
+        val elements = map { documentToScheduleDayEntity(it) }
+
+        return Json.encodeToString(ScheduleData(
+            monday = elements.filter { it.day == Day.MONDAY.name.lowercase() },
+            tuesday = elements.filter { it.day == Day.TUESDAY.name.lowercase() },
+            wednesday = elements.filter { it.day == Day.WEDNESDAY.name.lowercase() },
+            thursday = elements.filter { it.day == Day.THURSDAY.name.lowercase() },
+            friday = elements.filter { it.day == Day.FRIDAY.name.lowercase() },
+            saturday = elements.filter { it.day == Day.SATURDAY.name.lowercase() },
+            sunday = elements.filter { it.day == Day.SUNDAY.name.lowercase() }
+        ))
     }
 }

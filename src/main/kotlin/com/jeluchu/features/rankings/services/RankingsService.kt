@@ -368,7 +368,7 @@ class RankingsService(
             }.orEmpty().take(11).distinctBy { it.malId }
 
             val documentsToInsert = parseDataToDocuments(response, AnimeTopEntity.serializer())
-            if (documentsToInsert.isNotEmpty()) animeRankingTopTen .insertMany(documentsToInsert)
+            if (documentsToInsert.isNotEmpty()) animeRankingTopTen.insertMany(documentsToInsert)
             timers.update(timerKey)
 
             val elements = documentsToInsert.map { documentToAnimeTopEntity(it) }
