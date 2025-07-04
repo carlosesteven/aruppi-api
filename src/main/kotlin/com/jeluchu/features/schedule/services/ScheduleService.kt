@@ -80,13 +80,13 @@ class ScheduleService(
         val elements = map { documentToScheduleDayEntity(it) }
 
         return Json.encodeToString(ScheduleData(
-            monday = elements.filter { it.day == Day.MONDAY.name.lowercase() },
-            tuesday = elements.filter { it.day == Day.TUESDAY.name.lowercase() },
-            wednesday = elements.filter { it.day == Day.WEDNESDAY.name.lowercase() },
-            thursday = elements.filter { it.day == Day.THURSDAY.name.lowercase() },
-            friday = elements.filter { it.day == Day.FRIDAY.name.lowercase() },
-            saturday = elements.filter { it.day == Day.SATURDAY.name.lowercase() },
-            sunday = elements.filter { it.day == Day.SUNDAY.name.lowercase() }
+            monday = elements.filter { it.day == Day.MONDAY.name.lowercase() }.distinctBy { it.malId },
+            tuesday = elements.filter { it.day == Day.TUESDAY.name.lowercase() }.distinctBy { it.malId },
+            wednesday = elements.filter { it.day == Day.WEDNESDAY.name.lowercase() }.distinctBy { it.malId },
+            thursday = elements.filter { it.day == Day.THURSDAY.name.lowercase() }.distinctBy { it.malId },
+            friday = elements.filter { it.day == Day.FRIDAY.name.lowercase() }.distinctBy { it.malId },
+            saturday = elements.filter { it.day == Day.SATURDAY.name.lowercase() }.distinctBy { it.malId },
+            sunday = elements.filter { it.day == Day.SUNDAY.name.lowercase() }.distinctBy { it.malId }
         ))
     }
 }
