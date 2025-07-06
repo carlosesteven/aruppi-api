@@ -9,6 +9,7 @@ import com.jeluchu.core.extensions.update
 import com.jeluchu.core.messages.ErrorMessages
 import com.jeluchu.core.models.ErrorResponse
 import com.jeluchu.core.models.PaginationResponse
+import com.jeluchu.core.models.documentToSimpleAnimeEntity
 import com.jeluchu.features.anime.models.lastepisodes.LastEpisodeEntity
 import com.jeluchu.features.anime.models.lastepisodes.LastEpisodeEntity.Companion.toLastEpisodeData
 import com.jeluchu.core.models.jikan.search.AnimeSearch
@@ -170,7 +171,7 @@ class AnimeService(
             .sort(Sorts.descending("aired.from"))
             .toList()
 
-        val elements = animes.map { documentToAnimeTypeEntity(it) }
+        val elements = animes.map { documentToSimpleAnimeEntity(it) }
         call.respond(HttpStatusCode.OK, Json.encodeToString(elements))
     } catch (ex: Exception) {
         call.respond(HttpStatusCode.NotFound, ErrorResponse(ErrorMessages.InvalidInput.message))
