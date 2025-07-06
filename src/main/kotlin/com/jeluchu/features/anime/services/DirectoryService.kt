@@ -4,9 +4,10 @@ import com.jeluchu.core.enums.TimeUnit
 import com.jeluchu.core.enums.parseAnimeType
 import com.jeluchu.core.extensions.*
 import com.jeluchu.core.messages.ErrorMessages
-import com.jeluchu.core.models.PaginationResponse
 import com.jeluchu.core.utils.Collections
 import com.jeluchu.core.utils.TimerKey
+import com.jeluchu.core.utils.getLocalData
+import com.jeluchu.core.utils.getRemoteData
 import com.jeluchu.features.anime.mappers.documentToAnimeDirectoryEntity
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
@@ -17,7 +18,6 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.bson.Document
-import org.bson.conversions.Bson
 
 class DirectoryService(
     private val database: MongoDatabase,
@@ -58,83 +58,4 @@ class DirectoryService(
             onQuerySuccess = { data -> call.respond(HttpStatusCode.OK, Json.encodeToString(data)) }
         )
     }
-
-    suspend fun getAnimeBySeason(call: RoutingCall) {
-        val year = call.getIntSafeParam("year")
-        val season = call.getStringSafeParam("season")
-        val page = call.getIntSafeQueryParam("page", 1)
-        val size = call.getIntSafeQueryParam("size", 10)
-
-        val skipCount = (page - 1) * size
-        val timerKey = "${TimerKey.ANIME_TYPE}${year}_${season.lowercase()}"
-        val collection = database.getCollection(timerKey)
-        if (page < 1 || size < 1) call.badRequestError(ErrorMessages.InvalidSizeAndPage.message)
-
-        if (timers.needsUpdate(timerKey, 30, TimeUnit.DAY)) {
-            getRemoteData(
-                newCollection = collection,
-                remoteCollection = directory,
-                mapper = { documentToAnimeDirectoryEntity(it) },
-                filters = Filters.and(
-                    Filters.eq("year", year),
-                    Filters.eq("season", season.lowercase())
-                ),
-                onQuerySuccess = { data ->
-                    val documents = data.map { Document.parse(Json.encodeToString(it)) }
-                    if (documents.isNotEmpty()) collection.insertMany(documents)
-                    timers.update(timerKey)
-                }
-            )
-        }
-
-        getLocalData(
-            page = page,
-            size = size,
-            skipCount = skipCount,
-            collection = collection,
-            mapper = { documentToAnimeDirectoryEntity(it) },
-            onQuerySuccess = { data -> call.respond(HttpStatusCode.OK, Json.encodeToString(data)) }
-        )
-    }
-}
-
-private fun <T> getRemoteData(
-    filters: Bson,
-    mapper: (Document) -> T,
-    onQuerySuccess: (List<T>) -> Unit,
-    newCollection: MongoCollection<Document>,
-    remoteCollection: MongoCollection<Document>,
-) {
-    newCollection.deleteMany(Document())
-
-    val query = remoteCollection
-        .find(filters)
-        .toList()
-        .map { mapper(it) }
-
-    onQuerySuccess(query)
-}
-
-private suspend fun <T> getLocalData(
-    page: Int,
-    size: Int,
-    skipCount: Int,
-    mapper: (Document) -> T,
-    collection: MongoCollection<Document>,
-    onQuerySuccess: suspend (PaginationResponse<T>) -> Unit
-) {
-    val query = collection
-        .find()
-        .skip(skipCount)
-        .limit(size)
-        .toList()
-        .map { mapper(it) }
-
-    val paginate = PaginationResponse(
-        page = page,
-        data = query,
-        size = query.size
-    )
-
-    onQuerySuccess(paginate)
 }

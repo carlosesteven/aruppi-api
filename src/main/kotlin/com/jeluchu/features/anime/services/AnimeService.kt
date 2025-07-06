@@ -2,6 +2,7 @@ package com.jeluchu.features.anime.services
 
 import com.jeluchu.core.connection.RestClient
 import com.jeluchu.core.enums.TimeUnit
+import com.jeluchu.core.enums.parseAnimeStatusType
 import com.jeluchu.core.enums.parseAnimeType
 import com.jeluchu.core.extensions.needsUpdate
 import com.jeluchu.core.extensions.update
@@ -19,7 +20,8 @@ import com.jeluchu.features.anime.mappers.documentToAnimeLastEpisodeEntity
 import com.jeluchu.features.anime.mappers.documentToAnimeTypeEntity
 import com.jeluchu.features.anime.mappers.documentToMoreInfoEntity
 import com.mongodb.client.MongoDatabase
-import com.mongodb.client.model.Filters.eq
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Sorts
 import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -63,7 +65,7 @@ class AnimeService(
             call.respond(HttpStatusCode.OK, Json.encodeToString(response))
         } else {
             val animes = directoryCollection
-                .find(eq("type", type.uppercase()))
+                .find(Filters.eq("type", type.uppercase()))
                 .skip(skipCount)
                 .limit(size)
                 .toList()
@@ -84,7 +86,7 @@ class AnimeService(
 
     suspend fun getAnimeByMalId(call: RoutingCall) = try {
         val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException(ErrorMessages.InvalidMalId.message)
-        directoryCollection.find(eq("malId", id)).firstOrNull()?.let { anime ->
+        directoryCollection.find(Filters.eq("malId", id)).firstOrNull()?.let { anime ->
             val info = documentToMoreInfoEntity(anime)
             call.respond(HttpStatusCode.OK, Json.encodeToString(info))
         } ?: call.respond(HttpStatusCode.NotFound, ErrorResponse(ErrorMessages.AnimeNotFound.message))
@@ -110,38 +112,42 @@ class AnimeService(
         if (needsUpdate) {
             collection.deleteMany(Document())
 
-            val response = RestClient.request(
-                BaseUrls.JIKAN + "anime?status=airing&type=tv",
-                AnimeSearch.serializer()
-            )
-
             val animes = mutableListOf<LastEpisodeEntity>()
-            val totalPage = response.pagination?.lastPage ?: 0
-            response.data?.map { it.toLastEpisodeData() }.orEmpty().let { animes.addAll(it) }
 
-            for (page in 2..totalPage) {
-                val responsePage = RestClient.request(
-                    BaseUrls.JIKAN + "anime?status=airing&type=tv&page=$page",
-                    AnimeSearch.serializer()
-                ).data?.map { it.toLastEpisodeData() }.orEmpty()
+            RestClient.request(
+                BaseUrls.JIKAN + "anime?status=airing&type=tv&page=1",
+                AnimeSearch.serializer()
+            ).let { firstPage ->
+                val totalPage = firstPage.pagination?.lastPage ?: 2
 
-                animes.addAll(responsePage)
-                delay(1000)
+                firstPage.data?.let { firstAnimes ->
+                    firstAnimes.map { it.toLastEpisodeData() }.let { animes.addAll(it) }
+                }
+
+                for (page in 2..totalPage) {
+                    RestClient.request(
+                        BaseUrls.JIKAN + "anime?status=airing&type=tv&page=$page",
+                        AnimeSearch.serializer()
+                    ).data?.let { pagesAnimes ->
+                        animes.addAll(pagesAnimes.map { it.toLastEpisodeData() })
+                        delay(1000)
+                    }
+                }
             }
 
-            val documentsToInsert = parseDataToDocuments(animes, LastEpisodeEntity.serializer())
+            val documentsToInsert = parseDataToDocuments(animes.distinctBy { it.malId }, LastEpisodeEntity.serializer())
             if (documentsToInsert.isNotEmpty()) collection.insertMany(documentsToInsert)
             timers.update(timerKey)
 
             val queryDb = collection
-                .find(eq("day", dayOfWeek))
+                .find(Filters.eq("day", dayOfWeek))
                 .toList()
 
             val elements = queryDb.map { documentToAnimeLastEpisodeEntity(it) }
             call.respond(HttpStatusCode.OK, Json.encodeToString(elements))
         } else {
             val elements = collection
-                .find(eq("day", dayOfWeek))
+                .find(Filters.eq("day", dayOfWeek))
                 .toList()
                 .map { documentToAnimeLastEpisodeEntity(it) }
 
@@ -149,5 +155,24 @@ class AnimeService(
         }
     } catch (ex: Exception) {
         call.respond(HttpStatusCode.Unauthorized, ErrorResponse(ErrorMessages.UnauthorizedMongo.message))
+    }
+
+    suspend fun getAnimeByType(call: RoutingCall) = try {
+        val type = call.request.queryParameters["type"] ?: throw IllegalArgumentException(ErrorMessages.InvalidTopAnimeType.message)
+        val status = call.request.queryParameters["status"] ?: throw IllegalArgumentException(ErrorMessages.InvalidAnimeStatusType.message)
+
+        val animes = directoryCollection.find(
+            Filters.and(
+                Filters.eq("type", parseAnimeType(type)),
+                Filters.eq("status", parseAnimeStatusType(status)),
+            )
+        )
+            .sort(Sorts.descending("aired.from"))
+            .toList()
+
+        val elements = animes.map { documentToAnimeTypeEntity(it) }
+        call.respond(HttpStatusCode.OK, Json.encodeToString(elements))
+    } catch (ex: Exception) {
+        call.respond(HttpStatusCode.NotFound, ErrorResponse(ErrorMessages.InvalidInput.message))
     }
 }

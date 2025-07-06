@@ -12,6 +12,7 @@ sealed class ErrorMessages(val message: String) {
     data object InvalidMangaType : ErrorMessages("Invalid 'type' parameter. Valid values are: ${MangaTypes.entries.joinToString(", ") { it.name.lowercase() }}")
     data object InvalidSizeAndPage : ErrorMessages("Invalid page and size parameters")
     data object InvalidTopAnimeType : ErrorMessages("Invalid 'type' parameter. Valid values are: $animeTypesErrorList")
+    data object InvalidAnimeStatusType : ErrorMessages("Invalid 'status' parameter. Valid values are: $animeStatusTypesErrorList")
     data object InvalidTopAnimeFilterType : ErrorMessages("Invalid 'type' parameter. Valid values are: $animeFilterTypesErrorList")
     data object InvalidTopMangaType : ErrorMessages("Invalid 'type' parameter. Valid values are: $mangaTypesErrorList")
     data object InvalidTopMangaFilterType : ErrorMessages("Invalid 'type' parameter. Valid values are: $mangaFilterTypesErrorList")

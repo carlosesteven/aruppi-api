@@ -69,9 +69,11 @@ object Routes {
     const val EPISODES = "/episodes"
     const val ID = "/{id}"
     const val TYPE = "/{type}"
-    const val SEASON = "/{year}/{season}"
+    const val SEASON = "/season"
+    const val SEASON_PARAMS = "/{year}/{season}"
     const val DAY = "/{day}"
     const val THEMES = "/themes"
+    const val YEAR_INDEX = "/yearIndex"
 }
 
 object TimerKey {
