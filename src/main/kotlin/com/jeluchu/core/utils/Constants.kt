@@ -52,6 +52,7 @@ object Routes {
     const val ES = "/es"
     const val EN = "/en"
     const val TOP = "/top"
+    const val TAGS = "/tags"
     const val NEWS = "/news"
     const val ANIME = "/anime"
     const val MANGA = "/manga"
