@@ -161,11 +161,13 @@ class AnimeService(
     suspend fun getAnimeByType(call: RoutingCall) = try {
         val type = call.request.queryParameters["type"] ?: throw IllegalArgumentException(ErrorMessages.InvalidTopAnimeType.message)
         val status = call.request.queryParameters["status"] ?: throw IllegalArgumentException(ErrorMessages.InvalidAnimeStatusType.message)
+        val nsfw = call.request.queryParameters["nsfw"].toBoolean()
 
         val animes = directoryCollection.find(
             Filters.and(
                 Filters.eq("type", parseAnimeType(type)),
                 Filters.eq("status", parseAnimeStatusType(status)),
+                Filters.eq("nsfw", nsfw),
             )
         )
             .sort(Sorts.descending("aired.from"))
