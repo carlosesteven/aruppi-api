@@ -25,7 +25,7 @@ class SeasonService(
 ) {
     suspend fun getAnimeBySeason(call: RoutingCall) {
         val year = call.request.queryParameters["year"]?.toInt() ?: SeasonCalendar.currentYear
-        val station = parseSeasons(call.request.queryParameters["season"] ?: SeasonCalendar.currentSeason.name)
+        val station = parseSeasons(call.request.queryParameters["station"] ?: SeasonCalendar.currentSeason.name)
             ?: SeasonCalendar.currentSeason
 
         val query = directory.find(

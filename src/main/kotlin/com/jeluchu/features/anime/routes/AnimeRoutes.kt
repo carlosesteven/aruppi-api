@@ -18,8 +18,11 @@ fun Route.animeEndpoints(
 ) = route(Routes.ANIME) {
     getToJson { service.getAnimeByType(call) }
     getToJson(Routes.ID) { service.getAnimeByMalId(call) }
-    getToJson(Routes.TAGS) { tagsService.getAnimeByAnyTag(call) }
     getToJson(Routes.LAST_EPISODES) { service.getLastEpisodes(call) }
+
+    route(Routes.SUGGESTIONS) {
+        getToJson { tagsService.getAnimeByAnyTag(call) }
+    }
 
     route(Routes.SEASON) {
         getToJson { seasonService.getAnimeBySeason(call) }

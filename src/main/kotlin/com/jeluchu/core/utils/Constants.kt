@@ -74,6 +74,7 @@ object Routes {
     const val SEASON_PARAMS = "/{year}/{season}"
     const val DAY = "/{day}"
     const val THEMES = "/themes"
+    const val SUGGESTIONS = "/suggestions"
     const val YEAR_INDEX = "/yearIndex"
 }
 
