@@ -76,6 +76,7 @@ object Routes {
     const val THEMES = "/themes"
     const val SUGGESTIONS = "/suggestions"
     const val YEAR_INDEX = "/yearIndex"
+    const val RANDOM = "/random"
 }
 
 object TimerKey {

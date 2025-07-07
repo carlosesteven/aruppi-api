@@ -1,6 +1,8 @@
 package com.jeluchu.features.anime.services
 
 import com.jeluchu.core.connection.RestClient
+import com.jeluchu.core.enums.AnimeStatusTypes
+import com.jeluchu.core.enums.AnimeTypes
 import com.jeluchu.core.enums.TimeUnit
 import com.jeluchu.core.enums.parseAnimeStatusType
 import com.jeluchu.core.enums.parseAnimeType
@@ -21,6 +23,7 @@ import com.jeluchu.features.anime.mappers.documentToAnimeLastEpisodeEntity
 import com.jeluchu.features.anime.mappers.documentToAnimeTypeEntity
 import com.jeluchu.features.anime.mappers.documentToMoreInfoEntity
 import com.mongodb.client.MongoDatabase
+import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Sorts
 import io.ktor.http.*
@@ -88,6 +91,39 @@ class AnimeService(
     suspend fun getAnimeByMalId(call: RoutingCall) = try {
         val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException(ErrorMessages.InvalidMalId.message)
         directoryCollection.find(Filters.eq("malId", id)).firstOrNull()?.let { anime ->
+            val info = documentToMoreInfoEntity(anime)
+            call.respond(HttpStatusCode.OK, Json.encodeToString(info))
+        } ?: call.respond(HttpStatusCode.NotFound, ErrorResponse(ErrorMessages.AnimeNotFound.message))
+    } catch (ex: Exception) {
+        call.respond(HttpStatusCode.NotFound, ErrorResponse(ErrorMessages.InvalidInput.message))
+    }
+
+    suspend fun getRandomAnime(call: RoutingCall) = try {
+        val nsfw = call.request.queryParameters["nsfw"]?.toBoolean() ?: false
+
+        val filters = mutableListOf<org.bson.conversions.Bson>().apply {
+            add(Filters.`in`("type", listOf(
+                AnimeTypes.TV,
+                AnimeTypes.MOVIE,
+                AnimeTypes.OVA,
+                AnimeTypes.SPECIAL,
+                AnimeTypes.ONA,
+                AnimeTypes.TV_SPECIAL
+            )))
+
+            add(Filters.nin("status", listOf(
+                AnimeStatusTypes.UPCOMING
+            )))
+
+            if (!nsfw) add(Filters.eq("nsfw", false))
+        }
+
+        val aggregates = listOf(
+            Aggregates.match(Filters.and(filters)),
+            Aggregates.sample(1)
+        )
+
+        directoryCollection.aggregate(aggregates).firstOrNull()?.let { anime ->
             val info = documentToMoreInfoEntity(anime)
             call.respond(HttpStatusCode.OK, Json.encodeToString(info))
         } ?: call.respond(HttpStatusCode.NotFound, ErrorResponse(ErrorMessages.AnimeNotFound.message))

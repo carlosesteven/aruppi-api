@@ -1,6 +1,7 @@
 package com.jeluchu.features.anime.services
 
 import com.jeluchu.core.enums.AnimeStatusTypes
+import com.jeluchu.core.enums.AnimeTypes
 import com.jeluchu.core.models.documentToSimpleAnimeEntity
 import com.jeluchu.core.utils.Collections
 import com.mongodb.client.MongoCollection
@@ -19,6 +20,7 @@ class TagsService(
 ) {
     suspend fun getAnimeByAnyTag(call: RoutingCall) {
         val tags = call.request.queryParameters["tags"].orEmpty()
+        val nsfw = call.request.queryParameters["nsfw"].toBoolean()
 
         val tagsList = if (tags.isNotEmpty()) {
             tags.split(",").map { it.trim() }
@@ -29,17 +31,22 @@ class TagsService(
             return
         }
 
-        val query = directory.find(
-            Filters.and(
-                Filters.or(
-                    Filters.`in`("tags.es", tagsList),
-                    Filters.`in`("tags.en", tagsList)
-                ),
-                Filters.`in`("status", listOf(AnimeStatusTypes.FINISHED, AnimeStatusTypes.ONGOING)),
-                Filters.ne("type", "MUSIC"),
-                Filters.ne("type", "PV")
-            )
-        )
+        val filters = mutableListOf<org.bson.conversions.Bson>().apply {
+            add(Filters.or(
+                Filters.`in`("tags.es", tagsList),
+                Filters.`in`("tags.en", tagsList)
+            ))
+
+            add(Filters.`in`("status", listOf(AnimeStatusTypes.FINISHED, AnimeStatusTypes.ONGOING)))
+
+            add(Filters.ne("type", AnimeTypes.MUSIC))
+            add(Filters.ne("type", AnimeTypes.PV))
+            add(Filters.ne("type", AnimeTypes.CM))
+
+            if (!nsfw) add(Filters.eq("nsfw", false))
+        }
+
+        val query = directory.find(Filters.and(filters))
             .toList()
             .map { documentToSimpleAnimeEntity(it) }
 

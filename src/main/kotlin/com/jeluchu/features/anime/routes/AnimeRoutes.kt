@@ -18,6 +18,7 @@ fun Route.animeEndpoints(
 ) = route(Routes.ANIME) {
     getToJson { service.getAnimeByType(call) }
     getToJson(Routes.ID) { service.getAnimeByMalId(call) }
+    getToJson(Routes.RANDOM) { service.getRandomAnime(call) }
     getToJson(Routes.LAST_EPISODES) { service.getLastEpisodes(call) }
 
     route(Routes.SUGGESTIONS) {
