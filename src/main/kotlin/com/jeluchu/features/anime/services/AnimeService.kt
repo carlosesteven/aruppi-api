@@ -125,6 +125,12 @@ class AnimeService(
 
         directoryCollection.aggregate(aggregates).firstOrNull()?.let { anime ->
             val info = documentToMoreInfoEntity(anime)
+
+            call.response.headers.append("Cache-Control", "no-cache, no-store, must-revalidate, private")
+            call.response.headers.append("Pragma", "no-cache")
+            call.response.headers.append("Expires", "0")
+            call.response.headers.append("Vary", "*")
+
             call.respond(HttpStatusCode.OK, Json.encodeToString(info))
         } ?: call.respond(HttpStatusCode.NotFound, ErrorResponse(ErrorMessages.AnimeNotFound.message))
     } catch (ex: Exception) {
